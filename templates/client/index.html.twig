@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Client{% endblock %}
+
+{% block body %}
+    <h1>Dashboard Client</h1>
+
+    <p>Bienvenue {{ app.user.email }}</p>
+
+    <a href="{{ path('app_logout') }}">Déconnexion</a>
+{% endblock %}
