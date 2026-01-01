@@ -67,7 +67,7 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
 
         if (!$user instanceof UserInterface) {
             return new RedirectResponse(
-                $this->urlGenerator->generate('app_home')
+                  $this->urlGenerator->generate('client_dashboard')
             );
         }
 
