@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1>Ajouter un plat</h1>
+
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button type="submit">Ajouter</button>
+{{ form_end(form) }}
+
+<a href="{{ path('app_admin_plat') }}">Retour à la liste</a>
+{% endblock %}
