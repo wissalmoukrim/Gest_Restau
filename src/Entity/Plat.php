@@ -28,6 +28,7 @@ class Plat
     #[ORM\Column]
     private ?bool $disponible = null;
 
+    // ====== خدمتك: panierItems ======
     /**
      * @var Collection<int, PanierItem>
      */
@@ -38,6 +39,10 @@ class Plat
     {
         $this->panierItems = new ArrayCollection();
     }
+
+    // ====== Wissal: image ======
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
 
     public function getId(): ?int
     {
@@ -52,7 +57,6 @@ class Plat
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
         return $this;
     }
 
@@ -64,7 +68,6 @@ class Plat
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -76,7 +79,6 @@ class Plat
     public function setPrix(string $prix): static
     {
         $this->prix = $prix;
-
         return $this;
     }
 
@@ -88,10 +90,10 @@ class Plat
     public function setDisponible(bool $disponible): static
     {
         $this->disponible = $disponible;
-
         return $this;
     }
 
+    // ====== panierItems getters & setters ======
     /**
      * @return Collection<int, PanierItem>
      */
@@ -106,19 +108,28 @@ class Plat
             $this->panierItems->add($panierItem);
             $panierItem->setPlat($this);
         }
-
         return $this;
     }
 
     public function removePanierItem(PanierItem $panierItem): static
     {
         if ($this->panierItems->removeElement($panierItem)) {
-            // set the owning side to null (unless already changed)
             if ($panierItem->getPlat() === $this) {
                 $panierItem->setPlat(null);
             }
         }
+        return $this;
+    }
 
+    // ====== image getter & setter ======
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
         return $this;
     }
 }
