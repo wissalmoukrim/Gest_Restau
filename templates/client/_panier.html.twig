@@ -1,0 +1,42 @@
+<div id="panierPanel" class="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-all">
+<div class="p-6 space-y-4">
+
+<h2 class="text-xl font-bold">Votre panier</h2>
+
+{% set total = 0 %}
+{% for item in panier.panierItems %}
+    {% set sub = item.plat.prix * item.quantity %}
+    {% set total = total + sub %}
+<div class="flex justify-between border-b pb-3">
+    <div>
+        <p class="font-semibold">{{ item.plat.nom }}</p>
+        <p>{{ sub }} DH</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <!-- Boutons pour modifier la quantité -->
+        <a href="{{ path('client_panier_update', {id: item.id, quantity: item.quantity - 1}) }}" class="px-2">➖</a>
+        <span>{{ item.quantity }}</span>
+        <a href="{{ path('client_panier_update', {id: item.id, quantity: item.quantity + 1}) }}" class="px-2">➕</a>
+        <a href="{{ path('client_panier_remove', {id: item.id}) }}" class="px-2">🗑</a>
+    </div>
+</div>
+{% endfor %}
+
+<div class="border-t pt-4 space-y-2">
+<p>Sous-total: <b>{{ total }} DH</b></p>
+<p>Livraison: 15 DH</p>
+<p class="text-xl font-bold">Total: {{ total + 15 }} DH</p>
+
+<button class="w-full bg-black text-white py-2 rounded-lg mt-3">
+Commander
+</button>
+</div>
+
+</div>
+</div>
+
+<script>
+function togglePanier() {
+    document.getElementById('panierPanel').classList.toggle('translate-x-full');
+}
+</script>

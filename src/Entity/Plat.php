@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PlatRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -25,6 +27,17 @@ class Plat
 
     #[ORM\Column]
     private ?bool $disponible = null;
+
+    /**
+     * @var Collection<int, PanierItem>
+     */
+    #[ORM\OneToMany(targetEntity: PanierItem::class, mappedBy: 'plat')]
+    private Collection $panierItems;
+
+    public function __construct()
+    {
+        $this->panierItems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -75,6 +88,36 @@ class Plat
     public function setDisponible(bool $disponible): static
     {
         $this->disponible = $disponible;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PanierItem>
+     */
+    public function getPanierItems(): Collection
+    {
+        return $this->panierItems;
+    }
+
+    public function addPanierItem(PanierItem $panierItem): static
+    {
+        if (!$this->panierItems->contains($panierItem)) {
+            $this->panierItems->add($panierItem);
+            $panierItem->setPlat($this);
+        }
+
+        return $this;
+    }
+
+    public function removePanierItem(PanierItem $panierItem): static
+    {
+        if ($this->panierItems->removeElement($panierItem)) {
+            // set the owning side to null (unless already changed)
+            if ($panierItem->getPlat() === $this) {
+                $panierItem->setPlat(null);
+            }
+        }
 
         return $this;
     }
