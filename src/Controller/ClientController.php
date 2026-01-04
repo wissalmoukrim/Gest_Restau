@@ -7,12 +7,18 @@ use App\Entity\Panier;
 use App\Entity\PanierItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/client')]
 class ClientController extends AbstractController
-{
+{          #[Route('', name: 'client_dashboard')]
+    public function index(): Response
+    {
+        return $this->render('client/index.html.twig');
+    }
     #[Route('/plat', name: 'client_plat')]
     public function plat(EntityManagerInterface $em): JsonResponse|\Symfony\Component\HttpFoundation\Response
     {
@@ -43,7 +49,9 @@ class ClientController extends AbstractController
                 'id' => $i->getId(),
                 'nom' => $i->getPlat()->getNom(),
                 'prix' => $i->getPlat()->getPrix(),
+                 'image' => $i->getPlat()->getImage(),
                 'quantity' => $i->getQuantity(),
+               
                 'sub' => $sub
             ];
             $total += $sub;
@@ -70,6 +78,7 @@ class ClientController extends AbstractController
             $panierItem->setPanier($panier);
             $panierItem->setPlat($plat);
             $panierItem->setQuantity(1);
+            
             $em->persist($panierItem);
         } else {
             $panierItem->setQuantity($panierItem->getQuantity() + 1);
