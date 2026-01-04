@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}🍽️ Gest Restau{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{{ asset('build/app.css') }}">
+    
+    <style>
+        /* Couleurs personnalisées pour restaurant */
+        .bg-restaurant-primary {
+            background-color: #1a472a; /* Vert foncé élégant */
+        }
+        .bg-restaurant-secondary {
+            background-color: #d4af37; /* Or restaurant */
+        }
+        .bg-restaurant-accent {
+            background-color: #c41e3a; /* Rouge bordeaux */
+        }
+        .text-restaurant-gold {
+            color: #d4af37;
+        }
+        .border-restaurant-gold {
+            border-color: #d4af37;
+        }
+        .hover\:bg-restaurant-dark:hover {
+            background-color: #0f2e1c;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-100 to-amber-50 min-h-screen">
+
+{% include 'layout/header.html.twig' %}
+
+<div class="flex">
+    
+    {% include 'layout/sidebar.html.twig' %}
+
+    <main class="flex-1 p-6 ml-0 md:ml-64 transition-all duration-300">
+        {% block body %}{% endblock %}
+    </main>
+
+</div>
+
+{% include 'layout/footer.html.twig' %}
+
+</body>
+</html>

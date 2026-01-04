@@ -3,9 +3,13 @@
 {% block title %}Dashboard Admin{% endblock %}
 
 {% block body %}
-    <h1>Dashboard Admin</h1>
+<div class="min-h-screen bg-gray-50 p-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Dashboard Admin</h1>
 
-    <p>Bienvenue {{ app.user.email }}</p>
+    <p class="text-gray-600 mb-6">Bienvenue {{ app.user.email }}</p>
 
-    <a href="{{ path('app_logout') }}">Déconnexion</a>
+    <a href="{{ path('app_logout') }}" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition">
+        Déconnexion
+    </a>
+</div>
 {% endblock %}
