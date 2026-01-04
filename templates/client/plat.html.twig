@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Plats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-8">
+
+<!-- Bouton panier -->
+<button onclick="togglePanier()" id="panierBtn"
+        class="fixed top-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow">
+ 🛒 Panier ({{ panier.getPanierItems()|length }})
+</button>
+
+<!-- Liste des plats -->
+<div class="grid grid-cols-3 gap-6 mt-6">
+{% for plat in plats %}
+<div class="bg-white p-4 rounded-xl shadow">
+    <img src="{{ asset('uploads/' ~ plat.image) }}" class="w-full h-40 object-cover rounded">
+    <h3 class="font-bold text-lg mt-2">{{ plat.nom }}</h3>
+    <p class="text-gray-500">{{ plat.prix }} DH</p>
+
+    <button class="add-to-panier mt-3 w-full bg-black text-white py-2 rounded-lg"
+            data-id="{{ plat.id }}">
+        Ajouter au panier
+    </button>
+</div>
+{% endfor %}
+</div>
+
+<!-- Panel panier -->
+<div id="panierPanel"
+     class="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-all p-6">
+
+<h2 class="text-xl font-bold mb-4">Votre panier</h2>
+
+<div id="panierItems" class="space-y-4"></div>
+
+<div class="border-t pt-4 mt-4 space-y-2">
+  <p>Sous-total: <b id="sousTotal">0</b> DH</p>
+  <p>Livraison: 15 DH</p>
+  <p class="text-xl font-bold">Total: <b id="total">15</b> DH</p>
+
+  <button class="w-full bg-black text-white py-2 rounded-lg mt-3">Commander</button>
+  <button id="viderPanier" class="w-full bg-red-600 text-white py-2 rounded-lg mt-2">
+      Vider le panier
+  </button>
+</div>
+</div>
+
+<script>
+function togglePanier() {
+    document.getElementById('panierPanel').classList.toggle('translate-x-full');
+}
+
+function renderPanier(data){
+    const panierDiv = document.getElementById('panierItems');
+    panierDiv.innerHTML = '';
+
+    data.items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'flex justify-between items-center border-b pb-3';
+
+        div.innerHTML = `
+            <div class="flex items-center gap-3">
+                <img src="/uploads/${item.image}" class="w-16 h-16 object-cover rounded">
+                <div>
+                    <p class="font-semibold">${item.nom}</p>
+                    <p>${item.sub} DH</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 text-xl">
+                <button class="update-btn" data-id="${item.id}" data-change="-1">➖</button>
+                <span>${item.quantity}</span>
+                <button class="update-btn" data-id="${item.id}" data-change="1">➕</button>
+                <button class="remove-btn" data-id="${item.id}">🗑</button>
+            </div>
+        `;
+
+        panierDiv.appendChild(div);
+    });
+
+    document.getElementById('sousTotal').textContent = data.total;
+    document.getElementById('total').textContent = data.total + 15;
+    document.getElementById('panierBtn').textContent = `🛒 Panier (${data.totalItems})`;
+
+    document.querySelectorAll('.update-btn').forEach(btn=>{
+        btn.onclick = ()=>{
+            fetch(`/client/panier/update/${btn.dataset.id}/${parseInt(btn.parentElement.querySelector('span').textContent) + parseInt(btn.dataset.change)}`,
+                  {method:'POST'})
+            .then(r=>r.json()).then(renderPanier);
+        };
+    });
+
+    document.querySelectorAll('.remove-btn').forEach(btn=>{
+        btn.onclick = ()=>{
+            fetch(`/client/panier/remove/${btn.dataset.id}`, {method:'POST'})
+            .then(r=>r.json()).then(renderPanier);
+        };
+    });
+}
+
+// Ajouter au panier
+document.querySelectorAll('.add-to-panier').forEach(btn=>{
+    btn.onclick = ()=>{
+        fetch(`/client/panier/add/${btn.dataset.id}`, {method:'POST'})
+        .then(r=>r.json()).then(renderPanier);
+    };
+});
+
+// Vider panier
+document.getElementById('viderPanier').onclick = ()=>{
+    fetch(`/client/panier/vider`, {method:'POST'})
+    .then(r=>r.json()).then(renderPanier);
+};
+
+// Initialisation
+renderPanier({
+    items: [
+        {% for item in panier.getPanierItems() %}
+        {
+            id: {{ item.id }},
+            nom: "{{ item.plat.nom }}",
+            image: "{{ item.plat.image }}",
+            quantity: {{ item.quantity }},
+            sub: {{ item.quantity * item.plat.prix }}
+        },
+        {% endfor %}
+    ],
+    total: {{ panier.getPanierItems()|reduce((s,i)=>s + i.quantity*i.plat.prix,0) }},
+    totalItems: {{ panier.getPanierItems()|length }}
+});
+</script>
+
+</body>
+</html>
