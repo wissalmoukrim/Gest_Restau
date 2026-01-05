@@ -4,21 +4,21 @@
 
 {% block body %}
 
-{# ================= ZONE BIENVENUE ================= #}
+{# ================= ZONE BIENVENUE (SEULEMENT SI CONNECTÉ) ================= #}
 {% if app.user %}
     <div class="bg-black border border-amber-600 rounded-2xl p-6 mb-8 flex justify-between items-center">
         <div class="text-amber-200">
             <div class="flex items-center gap-3 mb-2">
                 <span class="text-3xl text-amber-400">👋</span>
                 <div>
-                    <p class="text-xl font-bold text-amber-300">Bienvenue Chef !</p>
+                    <p class="text-xl font-bold text-amber-300">Bienvenue {{ app.user.nom }} !</p>
                     <p class="text-amber-400">{{ app.user.email }}</p>
                 </div>
             </div>
         </div>
 
         <div class="flex gap-3">
-            {# 🔐 ADMIN → ESPACE ADMIN #}
+            {# ADMIN → ESPACE ADMIN #}
             {% if is_granted('ROLE_ADMIN') %}
                 <a href="{{ path('admin_dashboard') }}" class="bg-amber-600 hover:bg-amber-700 text-black px-5 py-3 rounded-xl font-bold transition flex items-center gap-2">
                     <span class="text-xl">⚙️</span>
@@ -26,8 +26,8 @@
                 </a>
             {% endif %}
 
-            {# 👤 CLIENT → ESPACE CLIENT #}
-            {% if is_granted('ROLE_CLIENT') %}
+            {# CLIENT → ESPACE CLIENT #}
+            {% if is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
                 <a href="{{ path('client_dashboard') }}" class="border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-5 py-3 rounded-xl font-bold transition flex items-center gap-2">
                     <span class="text-xl">👤</span>
                     Mon espace
@@ -36,17 +36,28 @@
         </div>
     </div>
 {% endif %}
+{# ================= FIN ZONE BIENVENUE ================= #}
+{% if app.user and is_granted('ROLE_ADMIN') %}
+<div class="bg-black border border-amber-600 rounded-2xl p-4 mb-6 flex gap-3">
+    <a href="{{ path('admin_employee_index') }}" class="bg-amber-600 hover:bg-amber-700 text-black px-4 py-2 rounded-xl font-bold transition">
+        👥 Gérer les employés
+    </a>
+    <a href="{{ path('admin_employee_new') }}" class="bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded-xl font-bold transition">
+        ➕ Ajouter un employé
+    </a>
+</div>
+{% endif %}
 
-{# ================= TITRE + AJOUTER PLAT ================= #}
+
+{# ================= TITRE + AJOUTER PLAT (ADMIN SEULEMENT) ================= #}
 <div class="flex justify-between items-center mb-8">
     <div>
         <h2 class="text-3xl font-bold text-amber-300">🍽️ Notre Carte</h2>
         <p class="text-amber-500">Découvrez nos spécialités maison</p>
     </div>
 
-    {# ➕ AJOUTER PLAT : ADMIN SEULEMENT #}
     {% if is_granted('ROLE_ADMIN') %}
-        <a href="#" class="bg-amber-600 hover:bg-amber-700 text-black px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
+        <a href="{{ path('app_admin_plat_new') }}" class="bg-amber-600 hover:bg-amber-700 text-black px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
             <span class="text-xl">+</span>
             Ajouter un plat
         </a>
@@ -56,18 +67,17 @@
 {# ================= LISTE DES PLATS ================= #}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for plat in plats %}
-        <div class="bg-black border border-amber-800 rounded-2xl overflow-hidden hover:border-amber-600 transition-all duration-300">
+        <div class="bg-black border border-amber-800 rounded-2xl overflow-hidden hover:border-amber-600 transition-all duration-300 relative">
             
-            {# BADGE SPECIALITÉ #}
             {% if loop.first %}
                 <div class="absolute top-4 right-4 bg-amber-600 text-black px-3 py-1 rounded-full text-xs font-bold z-10">
                     ★ Spécialité
                 </div>
             {% endif %}
             
-            {% if plat.image is defined %}
+            {% if plat.image %}
                 <div class="h-48 overflow-hidden">
-                    <img src="{{ plat.image }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="{{ plat.nom }}">
+                    <img src="{{ asset('uploads/' ~ plat.image) }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="{{ plat.nom }}">
                 </div>
             {% else %}
                 <div class="h-48 bg-gradient-to-br from-amber-900 to-black flex items-center justify-center">
@@ -87,40 +97,40 @@
                     {{ plat.description ?? 'Délicieux plat préparé avec soin par nos chefs.' }}
                 </p>
                 
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center mb-4">
                     <span class="text-2xl font-bold text-amber-300">{{ plat.prix }} DH</span>
-                    <div class="flex items-center text-amber-500">
-                        <span>★</span><span>★</span><span>★</span><span>★</span><span>☆</span>
-                    </div>
                 </div>
             </div>
 
             <div class="px-5 pb-5 flex flex-wrap gap-2">
-                {# 👁️ CONSULTER — TOUT LE MONDE #}
-                <a href="#" class="flex-1 bg-amber-600 hover:bg-amber-700 text-black px-4 py-2 rounded-lg font-bold transition text-center">
+                {# 👁️ Détails pour tous #}
+                <a href="{{ path('plat_details', {id: plat.id}) }}" class="flex-1 bg-amber-600 hover:bg-amber-700 text-black px-4 py-2 rounded-lg font-bold text-center">
                     👁️ Détails
                 </a>
 
-                {# 🛒 PANIER #}
-                {% if app.user %}
-                    <a href="#" class="flex-1 border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-4 py-2 rounded-lg font-bold transition text-center">
-                        🛒 Commander
-                    </a>
+                {# 🛒 Ajouter au panier #}
+                {% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
+                    <button onclick="addToCart({{ plat.id }})" class="flex-1 border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-4 py-2 rounded-lg font-bold text-center">
+                        🛒 Ajouter au panier
+                    </button>
                 {% else %}
-                    <a href="{{ path('app_register') }}" class="flex-1 border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-4 py-2 rounded-lg font-bold transition text-center">
-                        🛒 Commander
+                    <a href="{{ path('app_register') }}" class="flex-1 border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-4 py-2 rounded-lg font-bold text-center">
+                        🛒 Ajouter au panier
                     </a>
                 {% endif %}
 
                 {# ADMIN BOUTONS #}
                 {% if is_granted('ROLE_ADMIN') %}
                     <div class="w-full flex gap-2 mt-2">
-                        <a href="#" class="flex-1 border border-amber-600 text-amber-400 hover:bg-amber-900 px-3 py-2 rounded-lg text-sm text-center">
+                        <a href="{{ path('app_admin_plat_edit', {id: plat.id}) }}" class="flex-1 border border-amber-600 text-amber-400 hover:bg-amber-900 px-3 py-2 rounded-lg text-sm text-center">
                             ✏️ Modifier
                         </a>
-                        <a href="#" class="flex-1 border border-amber-800 text-amber-500 hover:bg-amber-900 px-3 py-2 rounded-lg text-sm text-center">
-                            🗑️ Supprimer
-                        </a>
+                        <form method="post" action="{{ path('app_admin_plat_delete', {id: plat.id}) }}" class="flex-1" onsubmit="return confirm('Voulez-vous vraiment supprimer ce plat ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_plat_' ~ plat.id) }}">
+                            <button class="w-full border border-amber-800 text-amber-500 hover:bg-amber-900 px-3 py-2 rounded-lg text-sm font-bold">
+                                🗑️ Supprimer
+                            </button>
+                        </form>
                     </div>
                 {% endif %}
             </div>
@@ -128,32 +138,47 @@
     {% endfor %}
 </div>
 
-{# ================= STATISTIQUES ================= #}
-{% if is_granted('ROLE_ADMIN') %}
-<div class="mt-12 bg-black border border-amber-800 rounded-2xl p-6">
-    <h3 class="text-2xl font-bold text-amber-300 mb-6">📊 Statistiques du Restaurant</h3>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-amber-900/30 border border-amber-800 p-4 rounded-xl text-center">
-            <div class="text-3xl text-amber-400 font-bold">24</div>
-            <div class="text-amber-500">Plats vendus</div>
-        </div>
-        <div class="bg-amber-900/30 border border-amber-800 p-4 rounded-xl text-center">
-            <div class="text-3xl text-amber-400 font-bold">1,240</div>
-            <div class="text-amber-500">Revenus (DH)</div>
-        </div>
-        <div class="bg-amber-900/30 border border-amber-800 p-4 rounded-xl text-center">
-            <div class="text-3xl text-amber-400 font-bold">12</div>
-            <div class="text-amber-500">Nouveaux clients</div>
-        </div>
-        <div class="bg-amber-900/30 border border-amber-800 p-4 rounded-xl text-center">
-            <div class="text-3xl text-amber-400 font-bold">4.8</div>
-            <div class="text-amber-500 flex items-center justify-center gap-1">
-                <span>★</span><span>★</span><span>★</span><span>★</span><span>☆</span>
-                <span class="ml-2">Note</span>
-            </div>
-        </div>
-    </div>
-</div>
+{# ================= PANIER FLOTTANT ================= #}
+{% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
+<a href="{{ path('client_panier') }}" class="fixed bottom-6 right-6 bg-amber-600 text-black px-5 py-3 rounded-full shadow-lg hover:bg-amber-700 transition flex items-center gap-2 z-50">
+    <span class="text-xl">🛒</span>
+    <span class="font-bold">Voir mon panier</span>
+</a>
+{% endif %}
+
+{# ================= SCRIPT AJAX ================= #}
+{% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
+<script>
+function addToCart(platId) {
+    fetch('/client/panier/add/' + platId, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest'}
+    })
+    .then(res => res.json())
+    .then(data => {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-fadeIn';
+        notification.innerHTML = `
+            <div class="flex items-center gap-3">
+                <span class="text-xl">✅</span>
+                <div>
+                    <p class="font-bold">Ajouté au panier !</p>
+                    <p class="text-sm">Le plat a été ajouté à votre panier</p>
+                </div>
+            </div>`;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    })
+    .catch(err => { console.error(err); alert('Erreur panier'); });
+}
+
+// Animation notification
+const style = document.createElement('style');
+style.textContent = `
+@keyframes fadeIn { from {opacity:0;transform:translateY(-20px);} to {opacity:1;transform:translateY(0);} }
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }`;
+document.head.appendChild(style);
+</script>
 {% endif %}
 
 {% endblock %}

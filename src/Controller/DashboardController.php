@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Plat;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -9,32 +11,22 @@ use Symfony\Component\Routing\Annotation\Route;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
-    public function index(): Response
+    public function index(EntityManagerInterface $em): Response
     {
-        // Plats TEMPORAIRES (fake)
-        $plats = [
-            [
-                'id' => 1,
-                'nom' => 'Pizza Margherita',
-                'prix' => 45,
-                'image' => 'https://via.placeholder.com/300x200'
-            ],
-            [
-                'id' => 2,
-                'nom' => 'Burger Cheese',
-                'prix' => 35,
-                'image' => 'https://via.placeholder.com/300x200'
-            ],
-            [
-                'id' => 3,
-                'nom' => 'Tacos Poulet',
-                'prix' => 30,
-                'image' => 'https://via.placeholder.com/300x200'
-            ],
-        ];
+        // Récupérer TOUS les plats
+        $plats = $em->getRepository(Plat::class)->findAll();
 
         return $this->render('dashboard/index.html.twig', [
-            'plats' => $plats
+            'plats' => $plats,
+        ]);
+    }
+
+    // ⭐ AJOUTEZ CETTE MÉTHODE POUR LES DÉTAILS ⭐
+    #[Route('/plat/{id}', name: 'plat_details')]
+    public function details(Plat $plat): Response
+    {
+        return $this->render('dashboard/details.html.twig', [
+            'plat' => $plat,
         ]);
     }
 }

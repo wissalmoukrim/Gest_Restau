@@ -1,0 +1,376 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Dashboard Responsable - Gest Restau{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+
+    <!-- Header Responsable -->
+    <nav class="bg-gray-900 text-white px-6 py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">👨‍💼</span>
+                <div>
+                    <h1 class="text-xl font-bold">Espace Responsable</h1>
+                    <p class="text-gray-300 text-sm">Supervision & Résolution de problèmes</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="bg-gray-800 px-4 py-2 rounded-full">
+                    <span class="font-bold">{{ app.user.nom }} {{ app.user.prenom }}</span>
+                    <span class="text-gray-400 ml-2">Responsable</span>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ path('responsable_rapports') }}" 
+                       class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full font-bold transition">
+                        📊 Rapports
+                    </a>
+                    <a href="{{ path('app_logout') }}" 
+                       class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-bold transition">
+                        Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <!-- Statistiques urgentes -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-red-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Problèmes</p>
+                        <h3 class="text-3xl font-bold text-red-700">{{ stats.problemes ?? 0 }}</h3>
+                    </div>
+                    <span class="text-3xl text-red-400">⚠️</span>
+                </div>
+                <p class="text-sm text-red-600 mt-2">À résoudre</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">En attente</p>
+                        <h3 class="text-3xl font-bold text-yellow-700">{{ stats.en_attente ?? 0 }}</h3>
+                    </div>
+                    <span class="text-3xl text-yellow-400">⏳</span>
+                </div>
+                <p class="text-sm text-yellow-600 mt-2">Commandes non assignées</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-blue-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Livreurs</p>
+                        <h3 class="text-3xl font-bold text-blue-700">{{ stats.livreurs_disponibles ?? 0 }}/{{ stats.total_livreurs ?? 0 }}</h3>
+                    </div>
+                    <span class="text-3xl text-blue-400">🚴</span>
+                </div>
+                <p class="text-sm text-blue-600 mt-2">Disponibles</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-green-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Chefs</p>
+                        <h3 class="text-3xl font-bold text-green-700">{{ stats.chefs_disponibles ?? 0 }}/{{ stats.total_chefs ?? 0 }}</h3>
+                    </div>
+                    <span class="text-3xl text-green-400">👨‍🍳</span>
+                </div>
+                <p class="text-sm text-green-600 mt-2">En service</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-purple-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Temps moyen</p>
+                        <h3 class="text-3xl font-bold text-purple-700">{{ stats.temps_moyen ?? 0 }}min</h3>
+                    </div>
+                    <span class="text-3xl text-purple-400">⏱️</span>
+                </div>
+                <p class="text-sm text-purple-600 mt-2">Livraison</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Colonne gauche : Problèmes urgents -->
+            <div class="lg:col-span-2">
+                <!-- Problèmes à résoudre -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                    <div class="bg-red-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>⚠️</span> Problèmes urgents
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        {% if problemes_urgents|length > 0 %}
+                            <div class="space-y-4">
+                                {% for probleme in problemes_urgents %}
+                                <div class="border border-red-200 rounded-xl p-4 bg-red-50">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h4 class="font-bold text-red-800 flex items-center gap-2">
+                                                Commande #{{ probleme.commande.id }}
+                                                <span class="bg-red-200 text-red-800 px-2 py-1 rounded text-xs">
+                                                    {{ probleme.type }}
+                                                </span>
+                                            </h4>
+                                            <p class="text-sm text-red-600">{{ probleme.dateSignalement|date('d/m/Y H:i') }}</p>
+                                        </div>
+                                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-bold">
+                                            {{ probleme.priorite }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <p class="text-sm mb-2"><strong>Description:</strong> {{ probleme.description }}</p>
+                                        <div class="flex gap-2 text-sm">
+                                            <span class="bg-gray-200 px-2 py-1 rounded">Client: {{ probleme.commande.user.email }}</span>
+                                            <span class="bg-gray-200 px-2 py-1 rounded">Livreur: {{ probleme.livreur ? probleme.livreur.email : 'Non assigné' }}</span>
+                                            <span class="bg-gray-200 px-2 py-1 rounded">Tél: {{ probleme.commande.user.telephone ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex gap-2">
+                                        <a href="{{ path('responsable_commande_show', {id: probleme.commande.id}) }}" 
+                                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold text-center transition">
+                                            👁️ Voir commande
+                                        </a>
+                                        <form method="POST" action="{{ path('responsable_resoudre_probleme', {id: probleme.id}) }}" class="flex-1">
+                                            <textarea name="solution" 
+                                                      placeholder="Description de la solution..."
+                                                      class="w-full mb-2 p-2 border rounded-lg text-sm"
+                                                      rows="2"
+                                                      required></textarea>
+                                            <button type="submit" 
+                                                    class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-bold transition">
+                                                ✅ Résoudre
+                                            </button>
+                                        </form>
+                                        <button onclick="appelerClient('{{ probleme.commande.user.telephone }}')"
+                                                class="flex-1 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 rounded-lg font-bold transition">
+                                            📞 Appeler
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <span class="text-5xl text-green-400 mb-4 block">🎉</span>
+                                <p class="text-gray-600 text-lg">Aucun problème urgent à signaler</p>
+                                <p class="text-gray-500 text-sm">Tout fonctionne normalement</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Commandes en attente d'assignation -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="bg-yellow-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>⏳</span> Commandes à assigner
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        {% if commandes_a_assigner|length > 0 %}
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="p-3 text-left">Commande</th>
+                                            <th class="p-3 text-left">Client</th>
+                                            <th class="p-3 text-left">Montant</th>
+                                            <th class="p-3 text-left">Heure</th>
+                                            <th class="p-3 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for commande in commandes_a_assigner %}
+                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                            <td class="p-3">
+                                                <strong class="text-blue-700">#{{ commande.id }}</strong>
+                                            </td>
+                                            <td class="p-3">
+                                                <div class="text-sm">{{ commande.user.email }}</div>
+                                                <div class="text-xs text-gray-500">{{ commande.user.telephone ?? 'N/A' }}</div>
+                                            </td>
+                                            <td class="p-3 font-bold">{{ commande.total }} DH</td>
+                                            <td class="p-3">
+                                                <div class="text-sm">{{ commande.date|date('H:i') }}</div>
+                                                <div class="text-xs text-gray-500">{{ commande.date|date('d/m') }}</div>
+                                            </td>
+                                            <td class="p-3">
+                                                <div class="flex gap-2">
+                                                    <button onclick="assignerCommande({{ commande.id }})"
+                                                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-bold">
+                                                        Assigner
+                                                    </button>
+                                                    <a href="{{ path('responsable_commande_show', {id: commande.id}) }}"
+                                                       class="border border-blue-600 text-blue-600 hover:bg-blue-50 px-3 py-1 rounded text-sm font-bold">
+                                                        Détails
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <span class="text-5xl text-gray-300 mb-4 block">✅</span>
+                                <p class="text-gray-600">Toutes les commandes sont assignées</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne droite : Supervision -->
+            <div>
+                <!-- Équipe en ligne -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                    <div class="bg-blue-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>👥</span> Équipe en ligne
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="space-y-4">
+                            <!-- Livreurs -->
+                            <div>
+                                <h3 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                                    <span class="text-xl">🚴</span> Livreurs
+                                </h3>
+                                {% if livreurs|length > 0 %}
+                                    {% for livreur in livreurs %}
+                                    <div class="flex items-center justify-between mb-2 p-2 hover:bg-gray-50 rounded">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <span class="text-blue-600 font-bold">{{ livreur.prenom|first|upper }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">{{ livreur.prenom }} {{ livreur.nom|slice(0, 1) }}.</div>
+                                                <div class="text-xs text-gray-500">{{ livreur.email }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-xs font-bold {{ livreur.statut == 'disponible' ? 'text-green-600' : 'text-red-600' }}">
+                                                {{ livreur.statut|capitalize }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">{{ livreur.commandes_en_cours }} livr.</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-gray-500 text-sm text-center py-2">Aucun livreur en ligne</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Chefs -->
+                            <div>
+                                <h3 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                                    <span class="text-xl">👨‍🍳</span> Chefs
+                                </h3>
+                                {% if chefs|length > 0 %}
+                                    {% for chef in chefs %}
+                                    <div class="flex items-center justify-between mb-2 p-2 hover:bg-gray-50 rounded">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                <span class="text-green-600 font-bold">{{ chef.prenom|first|upper }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium">{{ chef.prenom }} {{ chef.nom|slice(0, 1) }}.</div>
+                                                <div class="text-xs text-gray-500">{{ chef.email }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-xs font-bold {{ chef.statut == 'actif' ? 'text-green-600' : 'text-red-600' }}">
+                                                {{ chef.statut|capitalize }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">{{ chef.commandes_en_preparation }} plat(s)</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-gray-500 text-sm text-center py-2">Aucun chef en ligne</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertes système -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                    <div class="bg-gray-800 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>🔔</span> Alertes système
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="space-y-3">
+                            {% if alertes|length > 0 %}
+                                {% for alerte in alertes %}
+                                <div class="border-l-4 {{ 
+                                    alerte.niveau == 'critique' ? 'border-red-500 bg-red-50' :
+                                    alerte.niveau == 'warning' ? 'border-yellow-500 bg-yellow-50' :
+                                    'border-blue-500 bg-blue-50'
+                                }} p-3 rounded-r">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-bold {{ 
+                                                alerte.niveau == 'critique' ? 'text-red-700' :
+                                                alerte.niveau == 'warning' ? 'text-yellow-700' :
+                                                'text-blue-700'
+                                            }}">{{ alerte.titre }}</p>
+                                            <p class="text-sm text-gray-600">{{ alerte.message }}</p>
+                                        </div>
+                                        <span class="text-xs text-gray-500">{{ alerte.date|date('H:i') }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <span class="text-3xl text-green-400 mb-2 block">✅</span>
+                                    <p class="text-gray-600 text-sm">Aucune alerte système</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="space-y-3">
+                    <a href="{{ path('responsable_commandes') }}" 
+                       class="block w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl font-bold text-center transition">
+                        📋 Voir toutes les commandes
+                    </a>
+                    <a href="{{ path('responsable_rapports') }}" 
+                       class="block w-full bg-green-600 hover:bg-green-700 text-white p-4 rounded-xl font-bold text-center transition">
+                        📊 Générer un rapport
+                    </a>
+                    <a href="{{ path('responsable_statistiques') }}" 
+                       class="block w-full bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-center transition">
+                        📈 Statistiques détaillées
+                    </a>
+                    <button onclick="rafraichirDonnees()"
+                            class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-xl font-bold text-center transition">
+                        🔄 Actualiser les données
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function appelerClient(telephone) {
+    if (telephone && telephone !== 'N/A') {
+        if (confirm('Appeler le client au ' + telephone + ' ?')) {
+            window.location.href = 'tel:' + telephone;
+        }
+    } else {
+        alert('Numéro

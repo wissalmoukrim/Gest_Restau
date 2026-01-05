@@ -18,16 +18,52 @@ security:
             lazy: true
             provider: app_user_provider
             custom_authenticator: App\Security\AppAuthenticator
-
+            entry_point: App\Security\AppAuthenticator
+            
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: dashboard
+            
             logout:
                 path: app_logout
                 target: app_login
 
             remember_me:
                 secret: '%kernel.secret%'
-                lifetime: 604800   # 7 jours
+                lifetime: 604800
                 path: /
 
     access_control:
+        # Admin - accès complet
         - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/client, roles: ROLE_CLIENT }
+        
+        # Responsable - gestion des commandes
+        - { path: ^/responsable, roles: ROLE_RESPONSABLE }
+        
+        # Livreur - gestion des livraisons
+        - { path: ^/livreur, roles: ROLE_LIVREUR }
+        
+        # Réceptionniste - accueil et prise de commande
+        - { path: ^/receptionniste, roles: ROLE_RECEPTIONNISTE }
+        
+        # Chef - préparation des commandes
+        - { path: ^/chef, roles: ROLE_CHEF }
+        
+        # Client - accès client
+        - { path: ^/client, roles: ROLE_USER }
+        
+        # Dashboard - accessible à tous les rôles authentifiés
+        - { path: ^/dashboard, roles: PUBLIC_ACCESS }
+        
+        # Panier - accessible aux utilisateurs normaux
+        - { path: ^/client/panier, roles: ROLE_USER }
+
+        # Login - accessible à tous
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        
+        # Registration - accessible à tous
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        
+        # Homepage - accessible à tous
+        - { path: ^/$, roles: PUBLIC_ACCESS }

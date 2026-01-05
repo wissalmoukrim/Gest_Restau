@@ -1,0 +1,60 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Liste des employés{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Liste des employés</h1>
+
+    <a href="{{ path('admin_employee_new') }}" class="btn btn-primary mb-3">
+        Ajouter un employé
+    </a>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+                <th>Rôles</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.nom }}</td>
+                <td>{{ user.prenom }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% for role in user.roles %}
+                        <span class="badge bg-primary">{{ role }}</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    <a href="{{ path('admin_employee_edit', {'id': user.id}) }}"
+                       class="btn btn-sm btn-warning">Modifier</a>
+
+                    <form method="post"
+                          action="{{ path('admin_employee_delete', {'id': user.id}) }}"
+                          style="display:inline"
+                          onsubmit="return confirm('Supprimer cet employé ?');">
+                        <input type="hidden" name="_token"
+                               value="{{ csrf_token('delete' ~ user.id) }}">
+                        <button class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Aucun employé</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

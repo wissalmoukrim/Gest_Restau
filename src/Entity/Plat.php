@@ -38,11 +38,18 @@ class Plat
     public function __construct()
     {
         $this->panierItems = new ArrayCollection();
+        $this->commandeItems = new ArrayCollection();
     }
 
     // ====== Wissal: image ======
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
+    /**
+     * @var Collection<int, CommandeItem>
+     */
+    #[ORM\OneToMany(targetEntity: CommandeItem::class, mappedBy: 'plat')]
+    private Collection $commandeItems;
 
     public function getId(): ?int
     {
@@ -130,6 +137,36 @@ class Plat
     public function setImage(?string $image): static
     {
         $this->image = $image;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommandeItem>
+     */
+    public function getCommandeItems(): Collection
+    {
+        return $this->commandeItems;
+    }
+
+    public function addCommandeItem(CommandeItem $commandeItem): static
+    {
+        if (!$this->commandeItems->contains($commandeItem)) {
+            $this->commandeItems->add($commandeItem);
+            $commandeItem->setPlat($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommandeItem(CommandeItem $commandeItem): static
+    {
+        if ($this->commandeItems->removeElement($commandeItem)) {
+            // set the owning side to null (unless already changed)
+            if ($commandeItem->getPlat() === $this) {
+                $commandeItem->setPlat(null);
+            }
+        }
+
         return $this;
     }
 }

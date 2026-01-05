@@ -1,0 +1,311 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Dashboard Réceptionniste - Gest Restau{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-gray-100 to-green-50">
+
+    <!-- Header Réceptionniste -->
+    <nav class="bg-green-900 text-white px-6 py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">📞</span>
+                <div>
+                    <h1 class="text-xl font-bold">Espace Réceptionniste</h1>
+                    <p class="text-green-300 text-sm">Accueil et prise de commandes</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="bg-green-800 px-4 py-2 rounded-full">
+                    <span class="font-bold">{{ app.user.nom }} {{ app.user.prenom }}</span>
+                    <span class="text-green-300 ml-2">Réceptionniste</span>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ path('receptionniste_commande_nouvelle') }}" 
+                       class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full font-bold transition">
+                        ➕ Nouvelle commande
+                    </a>
+                    <a href="{{ path('app_logout') }}" 
+                       class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-bold transition">
+                        Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">En attente</p>
+                        <h3 class="text-3xl font-bold text-yellow-700">{{ commandesEnAttente|length }}</h3>
+                    </div>
+                    <span class="text-3xl text-yellow-400">⏳</span>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-blue-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">En cours</p>
+                        <h3 class="text-3xl font-bold text-blue-700">{{ commandesEnCours|length }}</h3>
+                    </div>
+                    <span class="text-3xl text-blue-400">⚡</span>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-green-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Terminées</p>
+                        <h3 class="text-3xl font-bold text-green-700">{{ commandesTerminees|length }}</h3>
+                    </div>
+                    <span class="text-3xl text-green-400">✅</span>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-purple-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total</p>
+                        <h3 class="text-3xl font-bold text-purple-700">{{ commandesEnAttente|length + commandesEnCours|length + commandesTerminees|length }}</h3>
+                    </div>
+                    <span class="text-3xl text-purple-400">📊</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Colonne gauche : Commandes en attente -->
+            <div class="lg:col-span-2">
+                <!-- Commandes en attente -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                    <div class="bg-yellow-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>⏳</span> Commandes en attente
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        {% if commandesEnAttente|length > 0 %}
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="p-3 text-left">Commande</th>
+                                            <th class="p-3 text-left">Client</th>
+                                            <th class="p-3 text-left">Montant</th>
+                                            <th class="p-3 text-left">Heure</th>
+                                            <th class="p-3 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for commande in commandesEnAttente %}
+                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                            <td class="p-3">
+                                                <strong class="text-blue-700">#{{ commande.id }}</strong>
+                                            </td>
+                                            <td class="p-3">
+                                                <div class="text-sm">{{ commande.user.email }}</div>
+                                                <div class="text-xs text-gray-500">{{ commande.user.telephone ?? 'N/A' }}</div>
+                                            </td>
+                                            <td class="p-3 font-bold">{{ commande.total }} DH</td>
+                                            <td class="p-3">
+                                                <div class="text-sm">{{ commande.date|date('H:i') }}</div>
+                                                <div class="text-xs text-gray-500">{{ commande.date|date('d/m') }}</div>
+                                            </td>
+                                            <td class="p-3">
+                                                <div class="flex gap-2">
+                                                    <a href="{{ path('receptionniste_commande_show', {id: commande.id}) }}"
+                                                       class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-bold">
+                                                        Détails
+                                                    </a>
+                                                    <a href="{{ path('receptionniste_clients') }}"
+                                                       class="border border-green-600 text-green-600 hover:bg-green-50 px-3 py-1 rounded text-sm font-bold">
+                                                        Assigner
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <span class="text-5xl text-green-400 mb-4 block">🎉</span>
+                                <p class="text-gray-600 text-lg">Aucune commande en attente</p>
+                                <p class="text-gray-500">Toutes les commandes sont traitées</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Commandes en cours -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="bg-blue-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>⚡</span> Commandes en cours
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        {% if commandesEnCours|length > 0 %}
+                            <div class="space-y-4">
+                                {% for commande in commandesEnCours|slice(0, 5) %}
+                                <div class="border border-blue-200 rounded-xl p-4 bg-blue-50">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h4 class="font-bold text-blue-800">Commande #{{ commande.id }}</h4>
+                                            <p class="text-sm text-blue-600">{{ commande.date|date('d/m/Y H:i') }}</p>
+                                        </div>
+                                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                                            {{ commande.statut }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <p class="text-sm"><strong>Client:</strong> {{ commande.user.email }}</p>
+                                        {% if commande.chef %}
+                                            <p class="text-sm"><strong>Chef:</strong> {{ commande.chef.email }}</p>
+                                        {% endif %}
+                                        {% if commande.livreur %}
+                                            <p class="text-sm"><strong>Livreur:</strong> {{ commande.livreur.email }}</p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <a href="{{ path('receptionniste_commande_show', {id: commande.id}) }}" 
+                                           class="inline-block border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg font-bold transition">
+                                            👁️ Détails
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if commandesEnCours|length > 5 %}
+                            <div class="mt-4 text-center">
+                                <a href="#" class="text-blue-600 hover:text-blue-800 font-bold">
+                                    Voir toutes les commandes en cours →
+                                </a>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-8">
+                                <span class="text-5xl text-gray-300 mb-4 block">📭</span>
+                                <p class="text-gray-500 text-lg">Aucune commande en cours</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne droite : Actions -->
+            <div>
+                <!-- Commandes terminées récentes -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                    <div class="bg-green-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>✅</span> Commandes terminées
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        {% if commandesTerminees|length > 0 %}
+                            <div class="space-y-3">
+                                {% for commande in commandesTerminees|slice(0, 5) %}
+                                <div class="border-b border-gray-200 pb-3 last:border-0">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-medium text-gray-800">#{{ commande.id }}</span>
+                                        <span class="text-sm text-gray-500">{{ commande.date|date('H:i') }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">{{ commande.user.email|slice(0, 15) }}...</span>
+                                        <span class="text-sm font-bold text-green-600">{{ commande.total }} DH</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <span class="text-3xl text-gray-300 mb-2 block">📭</span>
+                                <p class="text-gray-600 text-sm">Aucune commande terminée aujourd'hui</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                    <div class="bg-green-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>⚡</span> Actions rapides
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="space-y-3">
+                            <a href="{{ path('receptionniste_commande_nouvelle') }}" 
+                               class="block w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg font-bold text-center transition">
+                                ➕ Nouvelle commande
+                            </a>
+                            
+                            <a href="{{ path('receptionniste_clients') }}" 
+                               class="block w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-bold text-center transition">
+                                👥 Voir les clients
+                            </a>
+                            
+                            <a href="{{ path('dashboard') }}" 
+                               class="block w-full border-2 border-green-600 text-green-600 hover:bg-green-50 p-3 rounded-lg font-bold text-center transition">
+                                🏠 Accueil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations réceptionniste -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="bg-green-600 text-white p-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>📞</span> Mes informations
+                        </h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Commandes aujourd'hui:</span>
+                                <span class="font-bold text-green-700">{{ commandesEnAttente|length + commandesEnCours|length + commandesTerminees|length }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">En attente:</span>
+                                <span class="font-bold text-yellow-700">{{ commandesEnAttente|length }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">En cours:</span>
+                                <span class="font-bold text-blue-700">{{ commandesEnCours|length }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Terminées:</span>
+                                <span class="font-bold text-green-700">{{ commandesTerminees|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Actualiser les données toutes les 30 secondes
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+
+<style>
+.border-l-4 {
+    border-left-width: 4px;
+}
+</style>
+{% endblock %}

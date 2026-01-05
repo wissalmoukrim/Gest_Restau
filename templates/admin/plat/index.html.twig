@@ -1,53 +1,209 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des plats{% endblock %}
+{% block title %}Liste des plats - Administration{% endblock %}
 
 {% block body %}
-<h1>Liste des plats</h1>
-
-<a href="{{ path('app_admin_plat_new') }}">➕ Ajouter un plat</a>
-
-<br><br>
-
-<table border="1" cellpadding="10">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th>Prix</th>
-            <th>Disponible</th>
-            <th>Image</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for plat in plats %}
-            <tr>
-                <td>{{ plat.id }}</td>
-                <td>{{ plat.nom }}</td>
-                <td>{{ plat.prix }} DH</td>
-                <td>{% if plat.disponible %}✅ Oui{% else %}❌ Non{% endif %}</td>
-                <td>
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    {# ========== MESSAGES FLASH ========== #}
+    {% for message in app.flashes('success') %}
+        <div style="background: #4CAF50; color: white; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: flex; align-items: center;">
+            <span style="font-size: 20px; margin-right: 10px;">✅</span>
+            <span>{{ message }}</span>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div style="background: #f44336; color: white; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: flex; align-items: center;">
+            <span style="font-size: 20px; margin-right: 10px;">❌</span>
+            <span>{{ message }}</span>
+        </div>
+    {% endfor %}
+    {# ========== FIN MESSAGES FLASH ========== #}
+    
+    {# ========== EN-TÊTE ========== #}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h1 style="color: #333; margin: 0; font-size: 28px;">🍽️ Liste des plats</h1>
+            <p style="color: #666; margin: 5px 0 0 0;">Gérez votre carte des plats</p>
+        </div>
+        <a href="{{ path('app_admin_plat_new') }}" 
+           style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; 
+                  font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: background 0.3s;"
+           onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
+            <span style="font-size: 18px;">+</span>
+            Ajouter un plat
+        </a>
+    </div>
+    {# ========== FIN EN-TÊTE ========== #}
+    
+    {# ========== DEBUG ========== #}
+    <div style="background: #f0f0f0; padding: 10px 15px; margin-bottom: 20px; border-radius: 4px; border-left: 4px solid #2196F3;">
+        <strong>📊 STATISTIQUES :</strong> 
+        <span style="margin-left: 10px;">{{ plats|length }} plat(s) dans la base de données</span>
+    </div>
+    {# ========== FIN DEBUG ========== #}
+    
+    {# ========== LISTE DES PLATS ========== #}
+    {% if plats|length > 0 %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            {% for plat in plats %}
+                <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: white; 
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;"
+                     onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';"
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.1)';">
+                    
+                    {# En-tête du plat (Nom + Prix) #}
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #333; font-size: 20px; line-height: 1.3;">{{ plat.nom }}</h3>
+                        <span style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 5px 12px; 
+                                     border-radius: 20px; font-size: 16px; font-weight: bold; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);">
+                            {{ plat.prix }} DH
+                        </span>
+                    </div>
+                    
+                    {# Image du plat #}
                     {% if plat.image %}
-                        <img src="{{ asset('uploads/' ~ plat.image) }}" alt="{{ plat.nom }}" width="80">
+                        <div style="margin-bottom: 15px; overflow: hidden; border-radius: 6px;">
+                            <img src="{{ asset('uploads/' ~ plat.image) }}" 
+                                 alt="{{ plat.nom }}" 
+                                 style="width: 100%; height: 180px; object-fit: cover; transition: transform 0.5s;"
+                                 onmouseover="this.style.transform='scale(1.05)'"
+                                 onmouseout="this.style.transform='scale(1)'">
+                        </div>
+                    {% else %}
+                        <div style="margin-bottom: 15px; background: #f5f5f5; border-radius: 6px; height: 180px; 
+                                    display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 48px; color: #bbb;">🍽️</span>
+                        </div>
                     {% endif %}
-                </td>
-                <td>
-                    <a href="{{ path('app_admin_plat_edit', {id: plat.id}) }}">✏️ Modifier</a>
+                    
+                    {# Description #}
+                    <div style="margin-bottom: 15px;">
+                        <p style="color: #666; margin: 0; line-height: 1.5; font-size: 14px; 
+                                  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ plat.description|default('Aucune description disponible') }}
+                        </p>
+                    </div>
+                    
+                    {# Statut disponibilité #}
+                    <div style="margin-bottom: 20px; padding: 8px 12px; background: {{ plat.disponible ? '#e8f5e9' : '#ffebee' }}; 
+                                border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                        {% if plat.disponible %}
+                            <span style="color: #2e7d32; font-size: 16px;">✅</span>
+                            <span style="color: #2e7d32; font-weight: 500;">Disponible</span>
+                        {% else %}
+                            <span style="color: #c62828; font-size: 16px;">❌</span>
+                            <span style="color: #c62828; font-weight: 500;">Non disponible</span>
+                        {% endif %}
+                    </div>
+                    
+                    {# Boutons d'action #}
+                    <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <a href="{{ path('app_admin_plat_edit', {'id': plat.id}) }}" 
+                           style="flex: 1; background: #FF9800; color: white; padding: 10px; text-decoration: none; 
+                                  border-radius: 4px; text-align: center; font-weight: 500; transition: background 0.3s;
+                                  display: flex; align-items: center; justify-content: center; gap: 8px;"
+                           onmouseover="this.style.background='#F57C00'" onmouseout="this.style.background='#FF9800'">
+                            <span>✏️</span>
+                            <span>Modifier</span>
+                        </a>
+                        
+                        <form method="post" 
+                              action="{{ path('app_admin_plat_delete', {'id': plat.id}) }}" 
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer le plat \\'{{ plat.nom }}\\' ?');"
+                              style="flex: 1; margin: 0;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_plat_' ~ plat.id) }}">
+                            <button type="submit" 
+                                    style="width: 100%; background: #f44336; color: white; border: none; padding: 10px; 
+                                           border-radius: 4px; font-weight: 500; cursor: pointer; transition: background 0.3s;
+                                           display: flex; align-items: center; justify-content: center; gap: 8px;"
+                                    onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#f44336'">
+                                <span>🗑️</span>
+                                <span>Supprimer</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        {# Résumé #}
+        <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 6px; text-align: center;">
+            <p style="margin: 0; color: #666;">
+                Affichage de <strong>{{ plats|length }}</strong> plat{% if plats|length > 1 %}s{% endif %} au total
+            </p>
+        </div>
+        
+    {% else %}
+        {# ========== AUCUN PLAT ========== #}
+        <div style="text-align: center; padding: 60px 20px; background: #f9f9f9; border-radius: 12px; border: 2px dashed #ddd; margin-top: 20px;">
+            <div style="font-size: 72px; margin-bottom: 20px; color: #ccc;">🍽️</div>
+            <h3 style="color: #666; margin-bottom: 10px; font-size: 24px;">Aucun plat pour le moment</h3>
+            <p style="color: #888; max-width: 500px; margin: 0 auto 30px auto; line-height: 1.6;">
+                Votre carte des plats est vide. Commencez par ajouter votre premier plat pour construire votre menu.
+            </p>
+            <a href="{{ path('app_admin_plat_new') }}" 
+               style="background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; padding: 14px 28px; 
+                      text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;
+                      display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3); 
+                      transition: transform 0.2s, box-shadow 0.2s;"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(76, 175, 80, 0.4)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 8px rgba(76, 175, 80, 0.3)';">
+                <span style="font-size: 20px;">+</span>
+                <span>Ajouter mon premier plat</span>
+            </a>
+        </div>
+        {# ========== FIN AUCUN PLAT ========== #}
+    {% endif %}
+    {# ========== FIN LISTE DES PLATS ========== #}
+    
+</div>
 
-                    <form method="post" action="{{ path('app_admin_plat_delete', {id: plat.id}) }}"
-                          style="display:inline;"
-                          onsubmit="return confirm('Voulez-vous vraiment supprimer ce plat ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete_plat_' ~ plat.id) }}">
-                        <button type="submit">🗑️ Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">Aucun plat trouvé</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{# ========== STYLE GLOBAL ========== #}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        line-height: 1.6;
+        background: #f5f5f5;
+        margin: 0;
+    }
+    
+    a {
+        text-decoration: none;
+    }
+    
+    button, input[type="submit"] {
+        font-family: inherit;
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+        
+        .grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .actions {
+            flex-direction: column;
+        }
+        
+        .actions a, .actions form {
+            width: 100%;
+        }
+    }
+</style>
+{# ========== FIN STYLE GLOBAL ========== #}
 {% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}{{ plat.nom }} - Gest Restau{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Bouton Retour -->
+    <div class="mb-6">
+        <a href="{{ path('dashboard') }}" 
+           class="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 hover:underline">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Retour à la carte
+        </a>
+    </div>
+
+    <!-- Carte détaillée du plat -->
+    <div class="bg-black border border-amber-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div class="flex flex-col lg:flex-row">
+            <!-- Colonne Image -->
+            <div class="lg:w-1/2 relative">
+                {% if plat.image %}
+                    <img src="{{ asset('uploads/' ~ plat.image) }}" 
+                         class="w-full h-96 lg:h-full object-cover" 
+                         alt="{{ plat.nom }}">
+                {% else %}
+                    <div class="w-full h-96 lg:h-full bg-gradient-to-br from-amber-900 to-black flex items-center justify-center">
+                        <span class="text-8xl text-amber-600">🍛</span>
+                    </div>
+                {% endif %}
+                
+                <!-- Badge Spécialité -->
+                <div class="absolute top-4 right-4 bg-amber-600 text-black px-4 py-2 rounded-full font-bold shadow-lg">
+                    ★ Spécialité
+                </div>
+            </div>
+
+            <!-- Colonne Informations -->
+            <div class="lg:w-1/2 p-8">
+                <!-- En-tête -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-amber-900 text-amber-300 px-4 py-2 rounded-full text-sm font-bold">
+                            {{ plat.categorie ?? 'Plat principal' }}
+                        </span>
+                        <span class="text-3xl font-bold text-amber-300">{{ plat.prix }} DH</span>
+                    </div>
+                    
+                    <h1 class="text-4xl font-bold text-amber-200 mb-4">{{ plat.nom }}</h1>
+                    
+                    <!-- Disponibilité -->
+                    <div class="mb-6">
+                        {% if plat.disponible %}
+                            <span class="inline-flex items-center gap-2 text-green-400 bg-green-900/30 px-4 py-2 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Disponible à la commande
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-2 text-red-400 bg-red-900/30 px-4 py-2 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Temporairement indisponible
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-amber-300 mb-4 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Description
+                    </h3>
+                    <div class="bg-amber-950/50 border border-amber-800 rounded-xl p-6">
+                        <p class="text-amber-300 text-lg leading-relaxed">
+                            {{ plat.description ?? 'Ce délicieux plat est préparé avec soin par nos chefs expérimentés. Ingrédients frais et sélectionnés avec rigueur pour vous offrir une expérience culinaire exceptionnelle.' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Section Commandes -->
+                <div class="border-t border-amber-800 pt-6">
+                    <h3 class="text-2xl font-bold text-amber-300 mb-6">Passer commande</h3>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <!-- Bouton Ajouter au panier -->
+                        {% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
+                            {% if plat.disponible %}
+                                <form method="POST" action="{{ path('client_panier_add', {id: plat.id}) }}" class="flex-1">
+                                    <button type="submit" 
+                                            class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 shadow-lg">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        Ajouter au panier
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button disabled
+                                        class="w-full bg-gray-700 text-gray-400 px-8 py-4 rounded-xl font-bold text-lg cursor-not-allowed flex items-center justify-center gap-3">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                    Indisponible
+                                </button>
+                            {% endif %}
+                        {% elseif not app.user %}
+                            <!-- Pour les non connectés -->
+                            <div class="flex-1">
+                                <a href="{{ path('app_login') }}" 
+                                   class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 shadow-lg block">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Se connecter pour commander
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        <!-- Bouton Retour -->
+                        <a href="{{ path('dashboard') }}" 
+                           class="border-2 border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-black px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Informations supplémentaires -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-amber-900/30 border border-amber-800 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-2xl">⏱️</span>
+                <h4 class="text-lg font-bold text-amber-300">Temps de préparation</h4>
+            </div>
+            <p class="text-amber-400">20-30 minutes</p>
+        </div>
+        
+        <div class="bg-amber-900/30 border border-amber-800 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-2xl">🔥</span>
+                <h4 class="text-lg font-bold text-amber-300">Niveau</h4>
+            </div>
+            <p class="text-amber-400">Moyen</p>
+        </div>
+        
+        <div class="bg-amber-900/30 border border-amber-800 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-2xl">👨‍🍳</span>
+                <h4 class="text-lg font-bold text-amber-300">Chef</h4>
+            </div>
+            <p class="text-amber-400">Chef spécialisé</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

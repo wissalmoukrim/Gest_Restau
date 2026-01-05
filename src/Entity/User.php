@@ -15,6 +15,14 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    // Constantes pour les rôles
+    public const ROLE_USER = 'ROLE_USER';
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_RESPONSABLE = 'ROLE_RESPONSABLE';
+    public const ROLE_CHEF = 'ROLE_CHEF';
+    public const ROLE_LIVREUR = 'ROLE_LIVREUR';
+    public const ROLE_RECEPTIONNISTE = 'ROLE_RECEPTIONNISTE';
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -53,9 +61,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Panier::class, mappedBy: 'user')]
     private Collection $paniers;
 
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'user')]
+    private Collection $commandes;
+
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'chef')]
+    private Collection $commandesChef;
+
+    /**
+     * @var Collection<int, Commande>
+     */
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'livreur')]
+    private Collection $commandesLivreur;
+
     public function __construct()
     {
         $this->paniers = new ArrayCollection();
+        $this->commandes = new ArrayCollection();
+        $this->commandesChef = new ArrayCollection();
+        $this->commandesLivreur = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -194,6 +223,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->paniers;
     }
+    
 
     public function addPanier(Panier $panier): static
     {
@@ -211,6 +241,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($panier->getUser() === $this) {
                 $panier->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): static
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): static
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getUser() === $this) {
+                $commande->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandesChef(): Collection
+    {
+        return $this->commandesChef;
+    }
+
+    public function addCommandesChef(Commande $commandesChef): static
+    {
+        if (!$this->commandesChef->contains($commandesChef)) {
+            $this->commandesChef->add($commandesChef);
+            $commandesChef->setChef($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommandesChef(Commande $commandesChef): static
+    {
+        if ($this->commandesChef->removeElement($commandesChef)) {
+            // set the owning side to null (unless already changed)
+            if ($commandesChef->getChef() === $this) {
+                $commandesChef->setChef(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandesLivreur(): Collection
+    {
+        return $this->commandesLivreur;
+    }
+
+    public function addCommandesLivreur(Commande $commandesLivreur): static
+    {
+        if (!$this->commandesLivreur->contains($commandesLivreur)) {
+            $this->commandesLivreur->add($commandesLivreur);
+            $commandesLivreur->setLivreur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommandesLivreur(Commande $commandesLivreur): static
+    {
+        if ($this->commandesLivreur->removeElement($commandesLivreur)) {
+            // set the owning side to null (unless already changed)
+            if ($commandesLivreur->getLivreur() === $this) {
+                $commandesLivreur->setLivreur(null);
             }
         }
 

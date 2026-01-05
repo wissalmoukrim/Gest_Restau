@@ -1,0 +1,178 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Mon Panier - Gest Restau{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-amber-300">🛒 Mon Panier</h1>
+            <p class="text-amber-500">Vos plats sélectionnés</p>
+        </div>
+
+        <a href="{{ path('dashboard') }}"
+           class="btn-action bg-amber-600 hover:bg-amber-700 text-black">
+            ← Continuer mes achats
+        </a>
+    </div>
+
+    {% if panier.panierItems|length > 0 %}
+    <div class="bg-black border border-amber-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-amber-900 to-amber-800">
+                <tr>
+                    <th class="p-4 text-left text-amber-200">Plat</th>
+                    <th class="p-4 text-left text-amber-200">Prix</th>
+                    <th class="p-4 text-left text-amber-200">Quantité</th>
+                    <th class="p-4 text-left text-amber-200">Total</th>
+                    <th class="p-4 text-left text-amber-200">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% set total = 0 %}
+                {% for item in panier.panierItems %}
+                    {% set sousTotal = item.plat.prix * item.quantity %}
+                    {% set total = total + sousTotal %}
+
+                    <tr class="border-b border-amber-800 hover:bg-amber-900/20">
+                        <td class="p-4">
+                            <div class="flex items-center gap-4">
+                                <img src="{{ asset('uploads/' ~ item.plat.image) }}"
+                                     class="w-20 h-20 object-cover rounded-xl border border-amber-700">
+                                <div>
+                                    <h3 class="text-xl font-bold text-amber-200">
+                                        {{ item.plat.nom }}
+                                    </h3>
+                                    <p class="text-amber-400 text-sm">
+                                        {{ item.plat.description|slice(0, 40) }}...
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="p-4 text-amber-300 font-bold">
+                            {{ item.plat.prix }} DH
+                        </td>
+
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <form method="POST"
+                                      action="{{ path('client_panier_update', {id: item.id, quantity: item.quantity - 1}) }}">
+                                    <button type="submit"
+                                            class="btn-square bg-amber-900 text-amber-300 border border-amber-700">
+                                        −
+                                    </button>
+                                </form>
+
+                                <span class="w-12 h-12 flex items-center justify-center
+                                             text-xl font-bold text-amber-300
+                                             border border-amber-700 rounded-lg">
+                                    {{ item.quantity }}
+                                </span>
+
+                                <form method="POST"
+                                      action="{{ path('client_panier_update', {id: item.id, quantity: item.quantity + 1}) }}">
+                                    <button type="submit"
+                                            class="btn-square bg-amber-600 text-black border border-amber-500">
+                                        +
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+
+                        <td class="p-4 text-amber-300 font-bold">
+                            {{ sousTotal }} DH
+                        </td>
+
+                        <td class="p-4">
+                            <form method="POST"
+                                  action="{{ path('client_panier_remove', {id: item.id}) }}"
+                                  onsubmit="return confirm('Supprimer ce plat ?')">
+                                <button type="submit"
+                                        class="btn-action bg-red-800 hover:bg-red-700 text-red-200">
+                                    🗑 Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-6 flex flex-col lg:flex-row justify-between items-center gap-6 border-t border-amber-800">
+            <form method="POST"
+                  action="{{ path('client_panier_vider') }}"
+                  onsubmit="return confirm('Vider le panier ?')">
+                <button class="btn-action bg-amber-900 text-amber-300">
+                    Vider le panier
+                </button>
+            </form>
+
+            <div class="text-right">
+                <p class="text-amber-400 mb-2">
+                    Articles : {{ panier.panierItems|length }}
+                </p>
+
+                <p class="text-3xl font-bold text-amber-300 mb-4">
+                    Total : {{ total }} DH
+                </p>
+                
+                {# BOUTON COMMANDER #}
+                <form method="POST" action="{{ path('client_panier_commander') }}">
+                    <button type="submit"
+                            class="btn-action bg-amber-600 hover:bg-amber-500 text-black text-lg px-10">
+                        💳 Commander maintenant
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+        <div class="text-center py-20">
+            <p class="text-3xl text-amber-300 mb-6">Votre panier est vide</p>
+            <a href="{{ path('dashboard') }}"
+               class="btn-action bg-amber-600 text-black">
+                🍽 Explorer la carte
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .btn-square {
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: all .2s ease;
+    }
+
+    .btn-square:hover {
+        transform: scale(1.1);
+    }
+
+    .btn-action {
+        min-width: 140px;
+        height: 48px;
+        padding: 0 20px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: bold;
+        transition: all .2s ease;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Liste des Plats{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4">
+    <h1 class="text-3xl font-bold text-amber-300 mb-6">🍽️ Liste des Plats</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for plat in plats %}
+            <div class="bg-black border border-amber-800 rounded-2xl overflow-hidden hover:border-amber-600 transition-all duration-300">
+                {% if plat.image %}
+                    <img src="{{ asset('uploads/' ~ plat.image) }}" class="w-full h-48 object-cover" alt="{{ plat.nom }}">
+                {% else %}
+                    <div class="h-48 bg-gradient-to-br from-amber-900 to-black flex items-center justify-center">
+                        <span class="text-5xl text-amber-600">🍛</span>
+                    </div>
+                {% endif %}
+                
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-3">
+                        <h5 class="text-xl font-bold text-amber-200">{{ plat.nom }}</h5>
+                        <span class="bg-amber-900 text-amber-300 px-3 py-1 rounded-full text-sm font-bold">
+                            {{ plat.categorie ?? 'Plat' }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-amber-500 mb-4 line-clamp-2">
+                        {{ plat.description ?? 'Délicieux plat préparé avec soin par nos chefs.' }}
+                    </p>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-bold text-amber-300">{{ plat.prix }} DH</span>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-span-3 text-center py-12">
+                <span class="text-5xl text-amber-400 mb-4 block">🍽️</span>
+                <p class="text-amber-300 text-xl">Aucun plat disponible pour le moment</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-8 text-center">
+        <a href="{{ path('dashboard') }}" 
+           class="inline-block bg-amber-600 hover:bg-amber-700 text-black px-6 py-3 rounded-xl font-bold transition">
+            ← Retour au dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

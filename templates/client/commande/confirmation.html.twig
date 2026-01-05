@@ -1,0 +1,87 @@
+{# templates/client/commande/confirmation.html.twig #}
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Confirmation de commande{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h2 class="mb-0">✅ Commande confirmée !</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">Merci pour votre commande !</h4>
+                        <p>Votre commande a été enregistrée avec succès.</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Détails de la commande</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <strong>Numéro de commande :</strong> #{{ commande.id }}
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Date :</strong> {{ commande.date|date('d/m/Y H:i') }}
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Statut :</strong>
+                                    <span class="badge bg-warning">{{ commande.statut }}</span>
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Total :</strong> {{ commande.total }} DH
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Adresse de livraison :</strong> {{ commande.adresseLivraison }}
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Articles commandés</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Plat</th>
+                                            <th>Quantité</th>
+                                            <th>Prix unitaire</th>
+                                            <th>Sous-total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in commande.commandeItems %}
+                                        <tr>
+                                            <td>{{ item.plat.nom }}</td>
+                                            <td>{{ item.quantite }}</td>
+                                            <td>{{ item.prixUnitaire }} DH</td>
+                                            <td>{{ item.quantite * item.prixUnitaire }} DH</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{{ path('client_panier') }}" class="btn btn-primary">
+                            Retour au panier
+                        </a>
+                        <!-- CORRECTION ICI : Remplacez app_home -->
+                        <a href="{{ path('dashboard') }}" class="btn btn-outline-secondary">
+                            Retour au dashboard
+                        </a>
+                        <a href="{{ path('app_plat_index') }}" class="btn btn-success">
+                            Commander à nouveau
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

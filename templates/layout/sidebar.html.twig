@@ -1,78 +1,129 @@
-<aside class="w-64 bg-black text-white min-h-screen p-6 shadow-xl border-r border-amber-600 fixed">
-    <div class="text-center mb-10">
-        <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl">
-            👨‍🍳
+{# base_dashboard.html.twig - Partie avant le aside #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gest Restau{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="bg-black text-white">
+    
+    {# Récupérer le panier pour l'utilisateur connecté #}
+    {% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
+        {# Pour les clients, récupérer le panier #}
+        {% set panier = app.user.getPaniers().first() %}
+    {% endif %}
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-black text-white min-h-screen p-6 shadow-xl border-r border-amber-600 fixed">
+        <div class="text-center mb-10">
+            <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl">
+                👨‍🍳
+            </div>
+            <h3 class="text-xl font-bold text-amber-200">Menu Principal</h3>
+            <p class="text-amber-300 text-sm mt-1">Gest Restau Pro</p>
         </div>
-        <h3 class="text-xl font-bold text-amber-200">Menu Principal</h3>
-        <p class="text-amber-300 text-sm mt-1">Gest Restau Pro</p>
-    </div>
 
-    <ul class="space-y-3">
-        <li>
-            <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="{{ path('dashboard') }}">
-                <span class="text-xl">📊</span>
-                <span class="font-medium">Tableau de Bord</span>
-                <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
-            </a>
-        </li>
-
-        {% if is_granted('ROLE_ADMIN') %}
+        <ul class="space-y-3">
+            <!-- Tableau de Bord -->
             <li>
-                <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="#">
-                    <span class="text-xl">🍲</span>
-                    <span class="font-medium">Gestion des Plats</span>
+                <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="{{ path('dashboard') }}">
+                    <span class="text-xl">📊</span>
+                    <span class="font-medium">Tableau de Bord</span>
                     <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
                 </a>
             </li>
-            
-            <li>
-                <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="#">
-                    <span class="text-xl">📈</span>
-                    <span class="font-medium">Statistiques</span>
-                    <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
-                </a>
-            </li>
-            
-            <li>
-                <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="#">
-                    <span class="text-xl">👥</span>
-                    <span class="font-medium">Gestion Clients</span>
-                    <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
-                </a>
-            </li>
-        {% endif %}
 
-        {% if app.user %}
-            <li>
-                <a class="flex items-center gap-3 text-amber-300 hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="#">
-                    <span class="text-xl">🛒</span>
-                    <span class="font-medium">Mon Panier</span>
-                    <span class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
-                    <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
+            {% if is_granted('ROLE_ADMIN') %}
+                <!-- ADMIN: Gestion des Plats -->
+                <li>
+                    <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="{{ path('app_admin_plat') }}">
+                        <span class="text-xl">🍲</span>
+                        <span class="font-medium">Gestion des Plats</span>
+                        <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
+                    </a>
+                </li>
+                
+                <!-- ADMIN: Ajouter un Plat -->
+                <li>
+                    <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="{{ path('app_admin_plat_new') }}">
+                        <span class="text-xl">➕</span>
+                        <span class="font-medium">Ajouter un Plat</span>
+                        <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
+                    </a>
+                </li>
+                
+                <!-- ADMIN: Dashboard Admin -->
+                <li>
+                    <a class="flex items-center gap-3 text-white hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="{{ path('admin_dashboard') }}">
+                        <span class="text-xl">⚙️</span>
+                        <span class="font-medium">Espace Admin</span>
+                        <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if app.user %}
+                <!-- CLIENT: Mon Panier -->
+                <li>
+                    <a class="flex items-center gap-3 text-amber-300 hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="{{ path('app_panier') }}">
+                        <span class="text-xl">🛒</span>
+                        <span class="font-medium">Mon Panier</span>
+                        {% if panier is defined and panier.panierItems|length > 0 %}
+                            <span class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                {{ panier.panierItems|length }}
+                            </span>
+                        {% else %}
+                            <span class="ml-2 bg-amber-700 text-white text-xs px-2 py-1 rounded-full">0</span>
+                        {% endif %}
+                        <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
+                    </a>
+                </li>
+                
+                <!-- CLIENT: Mes Commandes -->
+                <li>
+                    <a class="flex items-center gap-3 text-amber-300 hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="#">
+                        <span class="text-xl">💳</span>
+                        <span class="font-medium">Mes Commandes</span>
+                        <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
+                    </a>
+                </li>
+                
+                <!-- CLIENT: Mon Profil -->
+                <li>
+                    <a class="flex items-center gap-3 text-amber-300 hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="#">
+                        <span class="text-xl">👤</span>
+                        <span class="font-medium">Mon Profil</span>
+                        <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            <!-- Déconnexion -->
+            <li class="pt-8 mt-8 border-t border-amber-700">
+                <a class="flex items-center gap-3 text-amber-200 hover:text-white px-4 py-3 rounded-xl transition" href="{{ path('app_logout') }}">
+                    <span class="text-xl">🚪</span>
+                    <span class="font-medium">Déconnexion</span>
                 </a>
             </li>
-            
-            <li>
-                <a class="flex items-center gap-3 text-amber-300 hover:bg-amber-700 hover:text-amber-100 px-4 py-3 rounded-xl transition-all duration-200 group" href="#">
-                    <span class="text-xl">💳</span>
-                    <span class="font-medium">Mes Commandes</span>
-                    <span class="ml-auto opacity-0 group-hover:opacity-100">→</span>
-                </a>
-            </li>
-        {% endif %}
+        </ul>
 
-        <li class="pt-8 mt-8 border-t border-amber-700">
-            <a class="flex items-center gap-3 text-amber-200 hover:text-white px-4 py-3 rounded-xl transition" href="{{ path('app_logout') }}">
-                <span class="text-xl">🚪</span>
-                <span class="font-medium">Déconnexion</span>
-            </a>
-        </li>
-    </ul>
+        <div class="mt-10 p-4 bg-amber-800/50 rounded-xl">
+            <p class="text-amber-200 text-sm text-center">
+                🕒 Service: 12h-23h<br>
+                📞 05 22 33 44 55
+            </p>
+        </div>
+    </aside>
 
-    <div class="mt-10 p-4 bg-amber-800/50 rounded-xl">
-        <p class="text-amber-200 text-sm text-center">
-            🕒 Service: 12h-23h<br>
-            📞 05 22 33 44 55
-        </p>
-    </div>
-</aside>
+    <!-- Main Content -->
+    <main class="ml-64 p-6 min-h-screen">
+        {% block body %}{% endblock %}
+    </main>
+
+    {% block javascripts %}{% endblock %}
+</body>
+</html>
