@@ -1,0 +1,147 @@
+{% extends 'base_dashboard.html.twig' %}
+
+{% block title %}Interface Chef - La Table Gourmande{% endblock %}
+
+{% block stylesheets %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .chef-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .chef-card:hover {
+            transform: translateY(-5px);
+        }
+        .chef-header {
+            background: linear-gradient(135deg, #ff8a00 0%, #da1b60 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        .avatar-circle {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #ff8a00 0%, #da1b60 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .info-item {
+            border-left: 4px solid #ff8a00;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        .status-badge {
+            background: #ff8a00;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Carte principale -->
+                <div class="card chef-card">
+                    <!-- En-tête -->
+                    <div class="card-header chef-header py-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="h3 mb-0">
+                                <i class="fas fa-utensils me-2"></i>Interface Chef
+                            </h1>
+                            <a href="{{ path('app_logout') }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-sign-out-alt me-1"></i> Déconnexion
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Corps -->
+                    <div class="card-body p-4">
+                        <!-- Avatar -->
+                        <div class="text-center mb-4">
+                            <div class="avatar-circle mb-3">
+                                <i class="fas fa-chef-hat fa-3x text-white"></i>
+                            </div>
+                            <h2 class="mb-2">Hello Chef !</h2>
+                            <p class="text-muted mb-0">Bienvenue dans votre interface</p>
+                        </div>
+                        
+                        <!-- Informations -->
+                        <div class="mb-4">
+                            <div class="info-item">
+                                <h5 class="text-primary mb-2">
+                                    <i class="fas fa-user me-2"></i>Informations personnelles
+                                </h5>
+                                {% if app.user %}
+                                <p class="mb-1"><strong>Nom :</strong> {{ app.user.nom }}</p>
+                                <p class="mb-1"><strong>Prénom :</strong> {{ app.user.prenom }}</p>
+                                <p class="mb-0"><strong>Email :</strong> {{ app.user.email }}</p>
+                                {% else %}
+                                <p class="text-danger">Non connecté</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Statut -->
+                        <div class="mb-4">
+                            <div class="info-item">
+                                <h5 class="text-primary mb-2">
+                                    <i class="fas fa-bell me-2"></i>Statut actuel
+                                </h5>
+                                <span class="status-badge">
+                                    <i class="fas fa-circle me-1"></i> Chef actif
+                                </span>
+                                <p class="mt-2 mb-0">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Connecté le {{ "now"|date("d/m/Y à H:i") }}
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="{{ path('chef_dashboard') }}" class="btn btn-warning btn-lg">
+                                <i class="fas fa-tachometer-alt me-2"></i> Tableau de bord
+                            </a>
+                            <a href="{{ path('app_logout') }}" class="btn btn-outline-danger">
+                                <i class="fas fa-power-off me-2"></i> Se déconnecter
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="card-footer text-center py-3 bg-light">
+                        <small class="text-muted">
+                            La Table Gourmande • Interface Chef • Version 1.0
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
