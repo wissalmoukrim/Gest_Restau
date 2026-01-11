@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Réceptionniste{% endblock %}
+
+{% block body %}
+<h1>Bienvenue, {{ app.user.nom }}</h1>
+
+<h2>Commandes en attente</h2>
+{% if commandesEnAttente is not empty %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Total</th>
+                <th>Adresse</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for commande in commandesEnAttente %}
+                <tr>
+                    <td>{{ commande.id }}</td>
+                    <td>{{ commande.user.email }}</td>
+                    <td>{{ commande.total }} MAD</td>
+                    <td>{{ commande.adresseLivraison }}</td>
+                    <td>{{ commande.date|date('d/m/Y H:i') }}</td>
+                    <td>
+                        <a href="{{ path('receptionniste_commande_show', {'id': commande.id}) }}">Voir</a>
+                        <form method="post" action="{{ path('receptionniste_commande_annuler', {'id': commande.id}) }}" style="display:inline;">
+                            <input type="text" name="raison" placeholder="Raison" required>
+                            <button type="submit">Annuler</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Aucune commande en attente.</p>
+{% endif %}
+
+<h2>Commandes en cours</h2>
+{% if commandesEnCours is not empty %}
+    <ul>
+        {% for commande in commandesEnCours %}
+            <li>
+                Commande #{{ commande.id }} - {{ commande.statut }} - Client: {{ commande.user.email }}
+                <a href="{{ path('receptionniste_commande_show', {'id': commande.id}) }}">Voir</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Aucune commande en cours.</p>
+{% endif %}
+
+<h2>Commandes terminées aujourd'hui</h2>
+{% if commandesTerminees is not empty %}
+    <ul>
+        {% for commande in commandesTerminees %}
+            <li>
+                Commande #{{ commande.id }} - Total: {{ commande.total }} MAD - Client: {{ commande.user.email }}
+                <a href="{{ path('receptionniste_commande_show', {'id': commande.id}) }}">Voir</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Aucune commande terminée aujourd'hui.</p>
+{% endif %}
+
+<a href="{{ path('receptionniste_commande_nouvelle') }}">Créer nouvelle commande</a>
+<a href="{{ path('receptionniste_clients') }}">Voir clients</a>
+
+{% endblock %}

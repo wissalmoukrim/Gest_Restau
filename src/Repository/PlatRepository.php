@@ -16,6 +16,19 @@ class PlatRepository extends ServiceEntityRepository
         parent::__construct($registry, Plat::class);
     }
 
+    public function getPlatsStats(): array
+{
+    return $this->createQueryBuilder('p')
+        ->leftJoin('p.commandeItems', 'ci')
+        ->select('p.id, p.nom, p.prix, 
+                 SUM(ci.quantite) as quantiteVendue,
+                 SUM(ci.quantite * ci.prixUnitaire) as revenu')
+        ->groupBy('p.id')
+        ->having('quantiteVendue > 0')
+        ->orderBy('quantiteVendue', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
     //    /**
     //     * @return Plat[] Returns an array of Plat objects
     //     */

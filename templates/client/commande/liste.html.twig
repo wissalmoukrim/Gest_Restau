@@ -24,96 +24,326 @@
                 <button onclick="filtrerCommandes('prete')" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold">Prête</button>
                 <button onclick="filtrerCommandes('en_livraison')" class="bg-purple-100 text-purple-800 px-4 py-2 rounded-full font-bold">En livraison</button>
                 <button onclick="filtrerCommandes('terminee')" class="bg-green-100 text-green-800 px-4 py-2 rounded-full font-bold">Terminées</button>
+                <button onclick="filtrerCommandes('annulee')" class="bg-red-100 text-red-800 px-4 py-2 rounded-full font-bold">Annulées</button>
             </div>
 
             <!-- Liste des commandes -->
             <div class="space-y-6">
                 {% for commande in commandes %}
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:border-amber-400 transition-all duration-300 p-5"
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 p-6"
                      data-statut="{{ commande.statut }}">
 
                     <!-- En-tête -->
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xl font-bold">Commande #{{ commande.id }}</h3>
-                        <p class="text-gray-500 text-sm">{{ commande.date|date('d/m/Y à H:i') }}</p>
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Commande #{{ commande.id }}</h3>
+                            <p class="text-gray-500 text-sm mt-1">{{ commande.date|date('d/m/Y à H:i') }}</p>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <!-- Badge de statut -->
+                            <span class="px-3 py-1 rounded-full text-sm font-bold
+                                {% if commande.statut == 'en_attente' %} bg-yellow-100 text-yellow-800
+                                {% elseif commande.statut == 'en_cours' %} bg-orange-100 text-orange-800
+                                {% elseif commande.statut == 'prete' %} bg-blue-100 text-blue-800
+                                {% elseif commande.statut == 'en_livraison' %} bg-purple-100 text-purple-800
+                                {% elseif commande.statut == 'terminee' %} bg-green-100 text-green-800
+                                {% elseif commande.statut == 'annulee' %} bg-red-100 text-red-800
+                                {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                {% if commande.statut == 'en_attente' %} ⏳ En attente
+                                {% elseif commande.statut == 'en_cours' %} 👨‍🍳 En cours
+                                {% elseif commande.statut == 'prete' %} ✅ Prête
+                                {% elseif commande.statut == 'en_livraison' %} 🚚 En livraison
+                                {% elseif commande.statut == 'terminee' %} 🎉 Terminée
+                                {% elseif commande.statut == 'annulee' %} ❌ Annulée
+                                {% else %} {{ commande.statut|capitalize }}
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
 
-                    <!-- Progress Bar / Timeline -->
-                    <div class="mb-4">
-                        <div class="flex items-center justify-between mb-2 text-xs font-bold">
-                            <span class="{{ commande.statut in ['en_attente','en_cours','prete','terminee'] ? 'text-green-800' : 'text-gray-400' }}">En attente</span>
-                            <span class="{{ commande.statut in ['en_cours','prete','terminee'] ? 'text-green-800' : 'text-gray-400' }}">En cours</span>
-                            <span class="{{ commande.statut in ['prete','terminee'] ? 'text-green-800' : 'text-gray-400' }}">Prête</span>
-                        
+                    <!-- Progress Bar / Timeline (uniquement pour les commandes actives) -->
+                    {% if commande.statut not in ['annulee', 'terminee'] %}
+                    <div class="mb-5">
+                        <div class="flex items-center justify-between mb-2 text-xs font-bold text-gray-600">
+                            <span class="{{ commande.statut in ['en_attente','en_cours','prete','en_livraison','terminee'] ? 'text-green-600' : 'text-gray-400' }}">En attente</span>
+                            <span class="{{ commande.statut in ['en_cours','prete','en_livraison','terminee'] ? 'text-green-600' : 'text-gray-400' }}">En cours</span>
+                            <span class="{{ commande.statut in ['prete','en_livraison','terminee'] ? 'text-green-600' : 'text-gray-400' }}">Prête</span>
+                            <span class="{{ commande.statut in ['en_livraison','terminee'] ? 'text-green-600' : 'text-gray-400' }}">En livraison</span>
+                            <span class="{{ commande.statut == 'terminee' ? 'text-green-600' : 'text-gray-400' }}">Terminée</span>
                         </div>
+
                         <div class="relative h-2 bg-gray-200 rounded-full">
                             {% set progress = 0 %}
                             {% if commande.statut == 'en_attente' %} {% set progress = 25 %}
                             {% elseif commande.statut == 'en_cours' %} {% set progress = 50 %}
-                            {% elseif commande.statut == 'prete' %} {% set progress = 100 %}
+                            {% elseif commande.statut == 'prete' %} {% set progress = 75 %}
+                            {% elseif commande.statut == 'en_livraison' %} {% set progress = 90 %}
+                            {% elseif commande.statut == 'terminee' %} {% set progress = 100 %}
                             {% endif %}
 
-                            <div class="absolute top-0 left-0 h-2 bg-green-600 rounded-full transition-all duration-500" style="width: {{ progress }}%;"></div>
+                            <div class="absolute top-0 left-0 h-2 bg-green-500 rounded-full transition-all duration-500" style="width: {{ progress }}%;"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Plats commandés -->
+                    <div class="mb-4">
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                            <i class="fas fa-utensils text-amber-600"></i>
+                            Plats commandés
+                        </h4>
+                        <div class="space-y-2">
+                            {% for item in commande.commandeItems %}
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                                <div>
+                                    <span class="font-medium text-gray-800">{{ item.plat.nom }}</span>
+                                    <span class="text-sm text-gray-500 ml-2">× {{ item.quantite }}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="font-bold text-gray-800">{{ item.quantite * item.prixUnitaire }} DH</span>
+                                    <p class="text-xs text-gray-500">{{ item.prixUnitaire }} DH/unité</p>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
 
-                    <!-- Plats commandés -->
-                    <div class="mb-3">
-                        <h4 class="font-bold text-gray-700 mb-2">🍽️ Plats commandés</h4>
-                        <ul class="list-disc list-inside text-sm">
-                            {% for item in commande.commandeItems %}
-                                <li>{{ item.quantite }} × {{ item.plat.nom }} ({{ item.quantite * item.prixUnitaire }} DH)</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <!-- Total -->
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="font-bold text-gray-700">Total:</span>
-                        <span class="font-bold text-green-600">{{ commande.total }} DH</span>
+                    <!-- Total et informations -->
+                    <div class="flex flex-wrap justify-between items-center mb-5 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+                        <div class="mb-3 md:mb-0">
+                            <span class="font-bold text-gray-700">Total:</span>
+                            <span class="font-bold text-green-600 text-xl ml-2">{{ commande.total }} DH</span>
+                        </div>
+                        
+                        {% if commande.adresseLivraison %}
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
+                            {{ commande.adresseLivraison|slice(0, 50) }}{% if commande.adresseLivraison|length > 50 %}...{% endif %}
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Actions -->
                     <div class="flex flex-wrap gap-3">
-                        <a href="{{ path('client_commande_show', {id: commande.id}) }}" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-lg font-bold transition">👁️ Voir les détails</a>
+                        <!-- Bouton Voir Détails -->
+                        <a href="{{ path('client_commande_show', {id: commande.id}) }}" 
+                           class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 
+                                  text-white px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-lg">
+                            <i class="fas fa-eye"></i>
+                            Voir les détails
+                        </a>
 
+                        <!-- Bouton Appeler Livreur -->
                         {% if commande.statut == 'en_livraison' and commande.livreur and commande.livreur.telephone %}
-                        <button onclick="appelerLivreur('{{ commande.livreur.telephone }}')" class="border border-green-600 text-green-600 hover:bg-green-50 px-5 py-2 rounded-lg font-bold transition">📞 Appeler le livreur</button>
+                        <button onclick="appelerLivreur('{{ commande.livreur.telephone }}')" 
+                                class="inline-flex items-center gap-2 border-2 border-green-600 text-green-600 
+                                       hover:bg-green-50 px-5 py-2.5 rounded-lg font-bold transition">
+                            <i class="fas fa-phone"></i>
+                            Appeler le livreur
+                        </button>
                         {% endif %}
 
+                        <!-- Bouton Déclarer Incident (UNIQUEMENT pour les commandes terminées) -->
+                        {% if commande.statut == 'terminee' %}
+                        <button onclick="openIncidentModal({{ commande.id }})" 
+                                class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 
+                                       hover:from-red-600 hover:to-red-700 text-white px-5 py-2.5 
+                                       rounded-lg font-bold transition-all hover:shadow-lg">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Signaler un problème
+                        </button>
+                        {% endif %}
+
+                        <!-- Bouton Annuler (uniquement pour commandes en attente) -->
                         {% if commande.statut == 'en_attente' %}
-                        <form method="POST" action="{{ path('client_commande_annuler', {id: commande.id}) }}" onsubmit="return confirm('Annuler la commande #{{ commande.id }} ?')" class="ml-auto">
-                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-bold transition">❌ Annuler la commande</button>
+                        <form method="POST" 
+                              action="{{ path('client_commande_annuler', {id: commande.id}) }}" 
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir annuler la commande #{{ commande.id }} ?')"
+                              class="md:ml-auto">
+                            <button type="submit" 
+                                    class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 
+                                           hover:from-red-600 hover:to-red-700 text-white px-5 py-2.5 
+                                           rounded-lg font-bold transition-all hover:shadow-lg">
+                                <i class="fas fa-times-circle"></i>
+                                Annuler la commande
+                            </button>
                         </form>
                         {% endif %}
 
-                        <a href="{{ path('app_plat_index') }}" class="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-5 py-2 rounded-lg font-bold transition">🍽️ Commander à nouveau</a>
-                    </div>
+                        <!-- Bouton Supprimer (uniquement pour commandes annulées) -->
+                        {% if commande.statut == 'annulee' %}
+                        <form method="POST" 
+                              action="{{ path('client_commande_supprimer', {id: commande.id}) }}" 
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement la commande #{{ commande.id }} ?\n\n⚠️ Cette action est irréversible.')"
+                              class="md:ml-auto">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_commande_' ~ commande.id) }}">
+                            <button type="submit" 
+                                    class="inline-flex items-center gap-2 bg-gradient-to-r from-gray-700 to-gray-800 
+                                           hover:from-gray-800 hover:to-gray-900 text-white px-5 py-2.5 
+                                           rounded-lg font-bold transition-all hover:shadow-lg">
+                                <i class="fas fa-trash-alt"></i>
+                                Supprimer
+                            </button>
+                        </form>
+                        {% endif %}
 
+                        <!-- Bouton Commander à nouveau -->
+                        <a href="{{ path('app_plat_index') }}" 
+                           class="inline-flex items-center gap-2 border-2 border-blue-600 text-blue-600 
+                                  hover:bg-blue-50 px-5 py-2.5 rounded-lg font-bold transition">
+                            <i class="fas fa-redo"></i>
+                            Commander à nouveau
+                        </a>
+                    </div>
                 </div>
-                {% else %}
-                    <p class="text-center text-gray-500 py-10">Aucune commande pour le moment.</p>
                 {% endfor %}
             </div>
         {% else %}
+            <!-- État vide -->
             <div class="text-center py-16 bg-white rounded-2xl shadow-lg">
                 <div class="text-6xl text-gray-300 mb-4">🛒</div>
                 <h3 class="text-2xl text-gray-600 mb-2">Aucune commande</h3>
                 <p class="text-gray-500 mb-6">Vous n'avez pas encore passé de commande</p>
-                <a href="{{ path('app_plat_index') }}" class="inline-block bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-3 rounded-full font-bold text-lg transition shadow-lg">🍽️ Commander maintenant</a>
+                <a href="{{ path('app_plat_index') }}" 
+                   class="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 
+                          hover:from-amber-600 hover:to-amber-700 text-white px-8 py-3 
+                          rounded-full font-bold text-lg transition-all hover:shadow-xl">
+                    <i class="fas fa-utensils"></i>
+                    Commander maintenant
+                </a>
             </div>
         {% endif %}
     </div>
 </div>
 
+<!-- Modal pour déclarer l'incident -->
+<div id="incidentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-800">Signaler un problème</h3>
+            <button onclick="closeIncidentModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="incidentForm" action="#" method="POST">
+            <input type="hidden" name="_token" value="{{ csrf_token('declarer_incident') }}">
+            <input type="hidden" name="commande_id" id="commandeIdInput">
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    Type de problème
+                </label>
+                <select name="type_incident" 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                    <option value="produit_manquant">Produit(s) manquant(s)</option>
+                    <option value="produit_endommage">Produit(s) endommagé(s)</option>
+                    <option value="produit_incorrect">Produit(s) incorrect(s)</option>
+                    <option value="retard_important">Livraison très en retard</option>
+                    <option value="probleme_livreur">Problème avec le livreur</option>
+                    <option value="qualite">Problème de qualité</option>
+                    <option value="autre">Autre problème</option>
+                </select>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    Description détaillée
+                </label>
+                <textarea name="description" 
+                          rows="4"
+                          placeholder="Décrivez le problème rencontré avec votre commande..."
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                          required></textarea>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="submit" 
+                        class="flex-1 bg-gradient-to-r from-red-500 to-red-600 
+                               hover:from-red-600 hover:to-red-700 text-white 
+                               px-5 py-3 rounded-lg font-bold transition-all">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    Envoyer le signalement
+                </button>
+                
+                <button type="button" 
+                        onclick="closeIncidentModal()"
+                        class="px-5 py-3 border border-gray-300 text-gray-700 
+                               hover:bg-gray-50 rounded-lg font-bold transition">
+                    Annuler
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Scripts -->
 <script>
+let currentCommandeId = null;
+
+function openIncidentModal(commandeId) {
+    currentCommandeId = commandeId;
+    
+    // Mettre à jour l'ID de commande dans le champ caché
+    document.getElementById('commandeIdInput').value = commandeId;
+    
+    // Mettre à jour l'action du formulaire avec le bon chemin
+    const form = document.getElementById('incidentForm');
+    const baseUrl = "{{ path('client_commande_declarer_incident', {id: 0}) }}";
+    form.action = baseUrl.replace('/0', '/' + commandeId);
+    
+    document.getElementById('incidentModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeIncidentModal() {
+    document.getElementById('incidentModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    document.getElementById('incidentForm').reset();
+}
+
+// Gérer la soumission du formulaire (approche traditionnelle, pas besoin de fetch)
+// Le formulaire s'envoie normalement grâce à l'action mise à jour
+
+// Fermer la modal avec ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeIncidentModal();
+    }
+});
+
 function filtrerCommandes(statut) {
     const commandes = document.querySelectorAll('[data-statut]');
+    const boutons = document.querySelectorAll('button[onclick*="filtrerCommandes"]');
+    
+    // Mettre à jour les styles des boutons
+    boutons.forEach(bouton => {
+        bouton.classList.remove('bg-blue-600', 'text-white');
+        bouton.classList.add('bg-gray-100', 'text-gray-800');
+    });
+    
+    // Activer le bouton sélectionné
+    const boutonActif = document.querySelector(`button[onclick="filtrerCommandes('${statut}')"]`);
+    if (boutonActif) {
+        boutonActif.classList.remove('bg-gray-100', 'text-gray-800');
+        boutonActif.classList.add('bg-blue-600', 'text-white');
+    }
+    
+    // Filtrer les commandes
     commandes.forEach(commande => {
         if (statut === 'tous' || commande.getAttribute('data-statut') === statut) {
             commande.style.display = 'block';
+            setTimeout(() => {
+                commande.style.opacity = '1';
+                commande.style.transform = 'translateY(0)';
+            }, 50);
         } else {
-            commande.style.display = 'none';
+            commande.style.opacity = '0';
+            commande.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                commande.style.display = 'none';
+            }, 300);
         }
     });
 }
@@ -128,15 +358,91 @@ function appelerLivreur(telephone) {
     }
 }
 
-// Actualiser la page toutes les 60 secondes pour les mises à jour
-setTimeout(() => {
-    window.location.reload();
-}, 60000);
+// Animation d'entrée des cartes
+document.addEventListener('DOMContentLoaded', function() {
+    const commandes = document.querySelectorAll('[data-statut]');
+    commandes.forEach((commande, index) => {
+        commande.style.opacity = '0';
+        commande.style.transform = 'translateY(20px)';
+        commande.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        setTimeout(() => {
+            commande.style.opacity = '1';
+            commande.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+    
+    // Auto-refresh toutes les 2 minutes
+    setTimeout(() => {
+        location.reload();
+    }, 120000);
+});
+
+// Confirmation avant suppression
+document.addEventListener('submit', function(e) {
+    if (e.target && e.target.action && e.target.action.includes('supprimer')) {
+        if (!confirm('⚠️ Attention !\n\nSupprimer définitivement cette commande ?\nCette action est irréversible.')) {
+            e.preventDefault();
+        }
+    }
+});
 </script>
 
+<!-- Styles -->
 <style>
 [data-statut] {
     transition: all 0.3s ease;
+}
+
+/* Animation pour les commandes annulées */
+[data-statut="annulee"] {
+    opacity: 0.85;
+    border-left: 4px solid #ef4444;
+}
+
+[data-statut="annulee"]:hover {
+    opacity: 1;
+}
+
+/* Animation pour la suppression */
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.9); }
+}
+
+.deleting {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+/* Style pour la modal */
+#incidentModal {
+    transition: opacity 0.3s ease;
+}
+
+#incidentModal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#incidentModal:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Animation pour l'ouverture de la modal */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#incidentModal > div {
+    animation: modalSlideIn 0.3s ease;
 }
 </style>
 {% endblock %}

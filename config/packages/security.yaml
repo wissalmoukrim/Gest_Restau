@@ -9,6 +9,12 @@ security:
                 class: App\Entity\User
                 property: email
 
+    # AJOUTEZ CETTE SECTION
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_ADMIN
+        ROLE_RECEPTIONNISTE: ROLE_USER
+        ROLE_USER: []
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -50,13 +56,13 @@ security:
         # Chef - préparation des commandes
         - { path: ^/chef, roles: ROLE_CHEF }
         
-        # Client - accès client
+        # Client - accès client (MAINTENANT accessible aussi aux réceptionnistes)
         - { path: ^/client, roles: ROLE_USER }
         
         # Dashboard - accessible à tous les rôles authentifiés
         - { path: ^/dashboard, roles: PUBLIC_ACCESS }
         
-        # Panier - accessible aux utilisateurs normaux
+        # Panier - accessible aux utilisateurs normaux (ET réceptionnistes)
         - { path: ^/client/panier, roles: ROLE_USER }
 
         # Login - accessible à tous

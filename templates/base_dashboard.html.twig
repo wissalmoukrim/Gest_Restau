@@ -94,6 +94,13 @@
                     📋 Mes Commandes
                 </a>
             </li>
+            <!-- NOUVEAU BOUTON : Facture (version intelligente) -->
+            <li>
+                <a href="{{ path('client_derniere_facture') }}" 
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-green-300">
+                    📄 Facture
+                </a>
+            </li>
         {% endif %}
 
         {# ================= CHEF ================= #}
@@ -117,7 +124,7 @@
         {# ================= ADMIN ================= #}
         {% if is_granted('ROLE_ADMIN') %}
             <li><a href="{{ path('app_admin_plat') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">🍲 Gestion des Plats</a></li>
-            <li><a href="{{ path('app_admin_plat_new') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">➕ Ajouter un Plat</a></li>
+                <li><a href="{{ path('admin_employee_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">👥 Gestion des Employés </a></li>
             <li><a href="{{ path('admin_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">⚙️ Espace Admin</a></li>
         {% endif %}
 
@@ -127,6 +134,15 @@
 
     </ul>
 </aside>
+
+    {# Dans la section des rôles #}
+    {% if is_granted('ROLE_RESPONSABLE') %}
+        <li>
+            <a href="{{ path('responsable_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-purple-300">
+                🛡️ Interface Responsable
+            </a>
+        </li>
+    {% endif %}
 
 {# ================= MAIN ================= #}
 <main class="flex-1 p-6 bg-white rounded-l-3xl shadow-inner">

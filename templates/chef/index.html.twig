@@ -3,48 +3,252 @@
 {% block title %}Dashboard Chef - Gest Restau{% endblock %}
 
 {% block body %}
-
-<h2 class="text-3xl font-bold mb-6">🧑‍🍳 Dashboard Chef - Commandes</h2>
-
-<div class="grid grid-cols-1 gap-6">
-    {% for commande in commandes %}
-    <div class="bg-black border border-amber-800 rounded-2xl p-5 text-amber-200">
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="text-xl font-bold">Commande #{{ commande.id }}</h3>
-            <span class="px-3 py-1 rounded-full 
-                {% if commande.statut == 'en_attente' %} bg-yellow-400 text-black
-                {% elseif commande.statut == 'en_cours' %} bg-purple-400 text-black
-                {% elseif commande.statut == 'prete' %} bg-green-400 text-black
-                {% endif %}">
-                {{ commande.statut|capitalize }}
-            </span>
-        </div>
-
-        <p><strong>Client:</strong> {{ commande.user.nom }}</p>
-        <p><strong>Total:</strong> {{ commande.total }} DH</p>
-
-        <p><strong>Plats commandés:</strong></p>
-        <ul class="list-disc ml-5">
-            {% for platItem in commande.commandeItems %}
-                <li>
-                    {{ platItem.plat.nom }} × {{ platItem.quantite }} 
-                    ({{ platItem.prixUnitaire }} DH) 
-                    = {{ platItem.sousTotal }} DH
-                </li>
-            {% endfor %}
-        </ul>
-
-        <form action="{{ path('chef_update_commande', {id: commande.id}) }}" method="POST" class="mt-3 flex gap-2">
-            {% if commande.statut == 'en_attente' %}
-                <button type="submit" name="status" value="en_cours" class="bg-yellow-400 px-4 py-2 rounded text-black font-bold">Commencer</button>
-            {% elseif commande.statut == 'en_cours' %}
-                <button type="submit" name="status" value="prete" class="bg-purple-400 px-4 py-2 rounded text-black font-bold">Marquer Prête</button>
-            {% endif %}
-        </form>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4 md:p-6">
+    <!-- Bouton retour au dashboard -->
+    <div class="mb-6">
+        <a href="{{ path('dashboard') }}" 
+           class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-700 to-amber-800 
+                  text-white px-5 py-2.5 rounded-lg font-bold hover:from-amber-800 hover:to-amber-900 
+                  transition-all hover:shadow-lg hover:-translate-y-0.5 mb-4">
+            <i class="fas fa-arrow-left"></i>
+            Retour au Dashboard Principal
+        </a>
+        
+        <h2 class="text-3xl font-bold text-amber-200 mb-2">🧑‍🍳 Dashboard Chef</h2>
+        <p class="text-amber-400 mb-6">Gestion des commandes en cuisine</p>
     </div>
-    {% else %}
-        <p class="text-amber-400">Aucune commande pour l'instant.</p>
-    {% endfor %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for commande in commandes %}
+            {% if commande.user %}
+            <div class="bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-amber-800 
+                        rounded-2xl p-5 text-amber-200 hover:border-amber-600 transition-all 
+                        hover:shadow-2xl hover:-translate-y-1">
+                <!-- En-tête commande -->
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-amber-100">Commande #{{ commande.id }}</h3>
+                        <p class="text-sm text-amber-400 mt-1">
+                            <i class="fas fa-clock mr-1"></i>
+                            {{ commande.date|date("d/m/Y H:i") }}
+                        </p>
+                    </div>
+                    
+                    <span class="px-3 py-1 rounded-full text-sm font-bold
+                        {% if commande.statut == 'en_attente' %} 
+                            bg-yellow-400 text-black animate-pulse
+                        {% elseif commande.statut == 'en_cours' %} 
+                            bg-purple-500 text-white
+                        {% elseif commande.statut == 'prete' %} 
+                            bg-green-500 text-white
+                        {% else %} 
+                            bg-gray-500 text-white
+                        {% endif %}">
+                        <i class="fas 
+                            {% if commande.statut == 'en_attente' %}fa-hourglass-start
+                            {% elseif commande.statut == 'en_cours' %}fa-blender
+                            {% elseif commande.statut == 'prete' %}fa-check-circle
+                            {% else %}fa-circle{% endif %} 
+                            mr-1">
+                        </i>
+                        {{ commande.statut|replace({'_': ' '})|title }}
+                    </span>
+                </div>
+
+                <!-- Informations client -->
+                <div class="mb-4 p-3 bg-gradient-to-r from-gray-900 to-black rounded-lg">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-800 
+                                    rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-amber-100"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-amber-100">
+                                {{ commande.user.nom ?? 'Client' }} {{ commande.user.prenom ?? '' }}
+                            </p>
+                            <p class="text-sm text-amber-400">
+                                {% if commande.user and commande.user.telephone %}
+                                    <i class="fas fa-phone mr-1"></i>{{ commande.user.telephone }}
+                                {% else %}
+                                    <i class="fas fa-phone mr-1"></i>Non renseigné
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-amber-400">Montant total</p>
+                            <p class="text-2xl font-bold text-amber-300">{{ commande.total }} DH</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-amber-400">Nombre de plats</p>
+                            <p class="text-xl font-bold text-amber-300">{{ commande.commandeItems|length }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des plats -->
+                <div class="mb-4">
+                    <h4 class="font-bold text-amber-200 mb-3 flex items-center gap-2">
+                        <i class="fas fa-utensils"></i>
+                        Détails des plats
+                    </h4>
+                    
+                    <div class="space-y-2 max-h-40 overflow-y-auto pr-2">
+                        {% for platItem in commande.commandeItems %}
+                        <div class="flex justify-between items-center p-2 bg-gradient-to-r from-gray-900 to-black 
+                                    rounded-lg hover:from-amber-900/30 hover:to-amber-800/30 transition">
+                            <div class="flex-1">
+                                <p class="font-medium text-amber-100">{{ platItem.plat.nom }}</p>
+                                <p class="text-xs text-amber-400">× {{ platItem.quantite }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-amber-300 font-bold">{{ platItem.sousTotal }} DH</p>
+                                <p class="text-xs text-amber-500">{{ platItem.prixUnitaire }} DH/unité</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <form action="{{ path('chef_update_commande', {id: commande.id}) }}" 
+                      method="POST" class="mt-4">
+                    <div class="flex gap-2">
+                        {% if commande.statut == 'en_attente' %}
+                            <button type="submit" name="status" value="en_cours" 
+                                    class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 
+                                           hover:from-yellow-600 hover:to-yellow-700 
+                                           text-black font-bold py-3 rounded-lg 
+                                           transition-all hover:shadow-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-play-circle"></i>
+                                Commencer la préparation
+                            </button>
+                        {% elseif commande.statut == 'en_cours' %}
+                            <button type="submit" name="status" value="prete" 
+                                    class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 
+                                           hover:from-purple-600 hover:to-purple-700 
+                                           text-white font-bold py-3 rounded-lg 
+                                           transition-all hover:shadow-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-check-circle"></i>
+                                Marquer comme prêt
+                            </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        {% else %}
+            <!-- Aucune commande -->
+            <div class="col-span-full bg-gradient-to-br from-gray-800 to-gray-900 border-2 
+                        border-amber-800 rounded-2xl p-8 text-center">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-amber-700 to-amber-900 
+                            rounded-full flex items-center justify-center">
+                    <i class="fas fa-utensils text-amber-200 text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-amber-100 mb-3">Aucune commande en attente</h3>
+                <p class="text-amber-400 mb-6">Toutes les commandes sont traitées ou en cours de préparation.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{{ path('dashboard') }}" 
+                       class="inline-flex items-center justify-center gap-2 bg-gradient-to-r 
+                              from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 
+                              text-white px-6 py-3 rounded-lg font-bold transition-all hover:shadow-lg">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Retour au dashboard
+                    </a>
+                    
+                    <button onclick="location.reload()" 
+                            class="inline-flex items-center justify-center gap-2 border-2 
+                                   border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white 
+                                   px-6 py-3 rounded-lg font-bold transition-all">
+                        <i class="fas fa-redo"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pied de page -->
+    <div class="mt-8 pt-6 border-t border-amber-800/30">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <p class="text-amber-400 text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    {{ commandes|length }} commande(s) affichée(s)
+                </p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <a href="{{ path('chef_interface') }}" 
+                   class="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 
+                          transition font-medium">
+                    <i class="fas fa-user-circle"></i>
+                    Interface Chef
+                </a>
+                
+                <a href="{{ path('app_logout') }}" 
+                   class="inline-flex items-center gap-2 text-red-400 hover:text-red-300 
+                          transition font-medium">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- Scripts pour animations -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes
+    const cards = document.querySelectorAll('.bg-gradient-to-br');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+    
+    // Auto-refresh toutes les 30 secondes
+    setTimeout(() => {
+        location.reload();
+    }, 30000);
+});
+</script>
+
+<!-- Styles supplémentaires -->
+<style>
+    /* Scrollbar personnalisée */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: #1f2937;
+        border-radius: 3px;
+    }
+    
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: #d97706;
+        border-radius: 3px;
+    }
+    
+    /* Animation pulse pour les commandes urgentes */
+    .animate-pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+</style>
 {% endblock %}

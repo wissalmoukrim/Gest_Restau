@@ -1,97 +1,233 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Modifier un plat{% endblock %}
+{% block title %}✏️ Modifier "{{ plat.nom }}"{% endblock %}
 
 {% block body %}
-<div style="max-width: 600px; margin: 30px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-    <h1 style="color: #333; border-bottom: 2px solid #FF9800; padding-bottom: 10px; margin-bottom: 20px;">
-        ✏️ Modifier le plat
-    </h1>
-    
-    {# DÉSACTIVE TURBO et ajoute enctype pour les fichiers #}
-    {{ form_start(form, {'attr': {'data-turbo': 'false', 'enctype': 'multipart/form-data'}}) }}
-    
-    <div style="margin-bottom: 20px;">
-        {{ form_label(form.nom) }}
-        {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-    </div>
-    
-    <div style="margin-bottom: 20px;">
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
-    </div>
-    
-    <div style="margin-bottom: 20px;">
-        {{ form_label(form.prix) }}
-        <div style="display: flex; align-items: center;">
-            {{ form_widget(form.prix, {'attr': {'class': 'form-control', 'style': 'flex: 1;'}}) }}
-            <span style="margin-left: 10px; font-weight: bold; color: #666;">DH</span>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-amber-50 p-4 md:p-6">
+    <div class="max-w-2xl mx-auto">
+        <!-- En-tête -->
+        <div class="mb-8">
+            <a href="{{ path('app_admin_plat') }}" 
+               class="inline-flex items-center text-gray-600 hover:text-gray-900 font-medium mb-4">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Retour à la liste
+            </a>
+            
+            <div class="flex items-center gap-4 mb-6">
+                <div class="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl">
+                    <i class="fas fa-edit text-amber-600 text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Modifier le plat</h1>
+                    <p class="text-gray-600">Mettre à jour les informations de "{{ plat.nom }}"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte du formulaire -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+            <div class="p-6 md:p-8">
+                {{ form_start(form, {'attr': {'data-turbo': 'false', 'enctype': 'multipart/form-data', 'class': 'space-y-6'}}) }}
+
+                <!-- Informations de base -->
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200 flex items-center gap-3">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Informations du plat
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Nom -->
+                        <div>
+                            {{ form_label(form.nom, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.nom, {'attr': {
+                                    'class': 'w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition',
+                                    'placeholder': 'Nom du plat'
+                                }}) }}
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-utensils text-gray-400"></i>
+                                </div>
+                            </div>
+                            {{ form_errors(form.nom) }}
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.description, {'attr': {
+                                    'class': 'w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition',
+                                    'placeholder': 'Description détaillée du plat',
+                                    'rows': 4
+                                }}) }}
+                                <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
+                                    <i class="fas fa-align-left text-gray-400"></i>
+                                </div>
+                            </div>
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <!-- Prix et Disponibilité -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Prix -->
+                            <div>
+                                {{ form_label(form.prix, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                <div class="relative">
+                                    {{ form_widget(form.prix, {'attr': {
+                                        'class': 'w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition',
+                                        'placeholder': '49.99'
+                                    }}) }}
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-tag text-gray-400"></i>
+                                    </div>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 font-medium">DH</span>
+                                    </div>
+                                </div>
+                                {{ form_errors(form.prix) }}
+                                <p class="text-sm text-gray-500 mt-2">Prix en dirhams marocains</p>
+                            </div>
+
+                            <!-- Disponibilité -->
+                            <div>
+                                <div class="flex items-center h-14">
+                                    <div class="flex items-center">
+                                        {{ form_widget(form.disponible, {'attr': {
+                                            'class': 'w-5 h-5 text-amber-600 border-gray-300 rounded focus:ring-amber-500'
+                                        }}) }}
+                                        <label for="{{ form.disponible.vars.id }}" 
+                                               class="ml-3 text-gray-700 font-medium cursor-pointer">
+                                            {{ form_label(form.disponible) }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {{ form_errors(form.disponible) }}
+                                <p class="text-sm text-gray-500 mt-2">Rendre visible aux clients</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                        <i class="fas fa-image text-purple-500"></i>
+                        Image du plat
+                    </h2>
+                    
+                    <div>
+                        {{ form_label(form.image, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        
+                        <!-- Image actuelle -->
+                        {% if plat.image %}
+                        <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <p class="text-sm font-medium text-gray-700 mb-2">Image actuelle :</p>
+                            <div class="flex items-center gap-4">
+                                <img src="{{ asset('uploads/' ~ plat.image) }}" 
+                                     alt="{{ plat.nom }}" 
+                                     class="w-32 h-32 object-cover rounded-lg border border-gray-300">
+                                <div>
+                                    <p class="text-sm text-gray-600">{{ plat.image }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">Conservez cette image si vous ne souhaitez pas la changer</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Upload nouvelle image -->
+                        <div class="relative">
+                            {{ form_widget(form.image, {'attr': {
+                                'class': 'block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none',
+                                'accept': 'image/*'
+                            }}) }}
+                        </div>
+                        {{ form_errors(form.image) }}
+                        
+                        <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-2"></i>
+                                <div>
+                                    <p class="text-sm text-blue-800 font-medium">Informations image</p>
+                                    <ul class="text-xs text-blue-700 mt-1 space-y-1">
+                                        <li>• Formats acceptés : JPG, PNG, WebP</li>
+                                        <li>• Taille recommandée : 800x600px</li>
+                                        <li>• Taille maximum : 5MB</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <a href="{{ path('app_admin_plat') }}"
+                           class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium 
+                                  hover:bg-gray-50 transition-colors flex items-center gap-2">
+                            Annuler
+                        </a>
+                        
+                        <div class="flex gap-3">
+                            <button type="reset" 
+                                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium 
+                                           hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                <i class="fas fa-redo"></i>
+                                Réinitialiser
+                            </button>
+                            
+                            <button type="submit"
+                                    class="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white 
+                                           rounded-lg font-bold hover:from-amber-600 hover:to-amber-700 
+                                           transition-all hover:shadow-lg flex items-center gap-2">
+                                <i class="fas fa-save"></i>
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
         </div>
     </div>
-    
-    <div style="margin-bottom: 20px; display: flex; align-items: center;">
-        {{ form_widget(form.disponible, {'attr': {'style': 'margin-right: 10px;'}}) }}
-        {{ form_label(form.disponible) }}
-    </div>
-    
-    <div style="margin-bottom: 25px;">
-        {{ form_label(form.image) }}
-        {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
-        
-        {# Vérifie si l'entité plat est accessible via form.vars.value #}
-        {% set currentPlat = form.vars.value %}
-        {% if currentPlat and currentPlat.image %}
-            <div style="margin-top: 10px;">
-                <p style="margin: 5px 0; color: #666;">Image actuelle:</p>
-                <img src="{{ asset('uploads/' ~ currentPlat.image) }}" 
-                     alt="{{ currentPlat.nom }}" 
-                     style="max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid #ddd;">
-            </div>
-        {% endif %}
-    </div>
-    
-    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-        <button type="submit" 
-                style="background: #FF9800; color: white; border: none; padding: 12px 30px; 
-                       border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold;
-                       transition: background 0.3s;"
-                onmouseover="this.style.background='#F57C00'"
-                onmouseout="this.style.background='#FF9800'">
-            💾 Enregistrer les modifications
-        </button>
-        
-        <a href="{{ path('app_admin_plat') }}" 
-           style="margin-left: 15px; color: #666; text-decoration: none; padding: 12px 20px;
-                  border: 1px solid #ddd; border-radius: 4px; display: inline-block;">
-            ↩ Retour à la liste
-        </a>
-    </div>
-    
-    {{ form_end(form) }}
 </div>
 
 <style>
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        margin: 8px 0 5px 0;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-        box-sizing: border-box;
+    /* Style pour le champ de fichier */
+    input[type="file"]::file-selector-button {
+        margin-right: 20px;
+        border: none;
+        background: #f3f4f6;
+        padding: 10px 20px;
+        border-radius: 8px;
+        color: #374151;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
     }
-    
-    .form-control:focus {
-        border-color: #FF9800;
+
+    input[type="file"]::file-selector-button:hover {
+        background: #e5e7eb;
+    }
+
+    /* Animation pour les champs focus */
+    input:focus, textarea:focus, select:focus {
         outline: none;
-        box-shadow: 0 0 5px rgba(255, 152, 0, 0.3);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
     }
-    
-    label {
-        font-weight: bold;
-        color: #555;
-        margin-bottom: 5px;
-        display: block;
+
+    /* Style pour les erreurs */
+    .form-error {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Style pour les labels */
+    label.required:after {
+        content: " *";
+        color: #dc2626;
     }
 </style>
 {% endblock %}

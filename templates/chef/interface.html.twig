@@ -1,147 +1,594 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Interface Chef - La Table Gourmande{% endblock %}
-
-{% block stylesheets %}
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        body {
-            background: linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .chef-card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-        .chef-card:hover {
-            transform: translateY(-5px);
-        }
-        .chef-header {
-            background: linear-gradient(135deg, #ff8a00 0%, #da1b60 100%);
-            color: white;
-            border-radius: 15px 15px 0 0;
-        }
-        .avatar-circle {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #ff8a00 0%, #da1b60 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            border: 5px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .info-item {
-            border-left: 4px solid #ff8a00;
-            padding-left: 15px;
-            margin-bottom: 20px;
-        }
-        .status-badge {
-            background: #ff8a00;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-    </style>
-{% endblock %}
+{% block title %}👨‍🍳 Dashboard Chef - La Table Gourmande{% endblock %}
 
 {% block body %}
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <!-- Carte principale -->
-                <div class="card chef-card">
-                    <!-- En-tête -->
-                    <div class="card-header chef-header py-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h1 class="h3 mb-0">
-                                <i class="fas fa-utensils me-2"></i>Interface Chef
-                            </h1>
-                            <a href="{{ path('app_logout') }}" class="btn btn-light btn-sm">
-                                <i class="fas fa-sign-out-alt me-1"></i> Déconnexion
-                            </a>
-                        </div>
+<div class="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-4 md:p-6">
+    <!-- En-tête Chef -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl shadow-lg">
+                    <i class="fas fa-chef-hat text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">
+                        Bonjour Chef 
+                        <span class="text-orange-600">{{ app.user.prenom ?? app.user.email|split('@')|first }}</span> !
+                    </h1>
+                    <p class="text-gray-600 mt-2">Gérez vos cuisines et commandes en temps réel</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="px-4 py-2 bg-white border border-orange-300 rounded-full text-sm font-medium text-orange-700">
+                    <i class="fas fa-badge-check mr-2 text-orange-500"></i>
+                    Chef Certifié
+                </span>
+                <a href="{{ path('app_logout') }}" 
+                   class="bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 
+                          text-white px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-lg 
+                          hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </div>
+
+        <!-- Dashboard Header -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow border border-orange-200 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-orange-100 rounded-lg">
+                        <i class="fas fa-clock text-orange-600"></i>
                     </div>
-                    
-                    <!-- Corps -->
-                    <div class="card-body p-4">
-                        <!-- Avatar -->
-                        <div class="text-center mb-4">
-                            <div class="avatar-circle mb-3">
-                                <i class="fas fa-chef-hat fa-3x text-white"></i>
-                            </div>
-                            <h2 class="mb-2">Hello Chef !</h2>
-                            <p class="text-muted mb-0">Bienvenue dans votre interface</p>
-                        </div>
-                        
-                        <!-- Informations -->
-                        <div class="mb-4">
-                            <div class="info-item">
-                                <h5 class="text-primary mb-2">
-                                    <i class="fas fa-user me-2"></i>Informations personnelles
-                                </h5>
-                                {% if app.user %}
-                                <p class="mb-1"><strong>Nom :</strong> {{ app.user.nom }}</p>
-                                <p class="mb-1"><strong>Prénom :</strong> {{ app.user.prenom }}</p>
-                                <p class="mb-0"><strong>Email :</strong> {{ app.user.email }}</p>
-                                {% else %}
-                                <p class="text-danger">Non connecté</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Statut -->
-                        <div class="mb-4">
-                            <div class="info-item">
-                                <h5 class="text-primary mb-2">
-                                    <i class="fas fa-bell me-2"></i>Statut actuel
-                                </h5>
-                                <span class="status-badge">
-                                    <i class="fas fa-circle me-1"></i> Chef actif
-                                </span>
-                                <p class="mt-2 mb-0">
-                                    <small class="text-muted">
-                                        <i class="fas fa-clock me-1"></i>
-                                        Connecté le {{ "now"|date("d/m/Y à H:i") }}
-                                    </small>
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <!-- Actions -->
-                        <div class="d-grid gap-2 mt-4">
-                            <a href="{{ path('chef_dashboard') }}" class="btn btn-warning btn-lg">
-                                <i class="fas fa-tachometer-alt me-2"></i> Tableau de bord
-                            </a>
-                            <a href="{{ path('app_logout') }}" class="btn btn-outline-danger">
-                                <i class="fas fa-power-off me-2"></i> Se déconnecter
-                            </a>
-                        </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Service du jour</p>
+                        <p class="text-lg font-bold text-gray-800">{{ "now"|date("H:i") }} - 23:00</p>
                     </div>
-                    
-                    <!-- Footer -->
-                    <div class="card-footer text-center py-3 bg-light">
-                        <small class="text-muted">
-                            La Table Gourmande • Interface Chef • Version 1.0
-                        </small>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <i class="fas fa-utensils text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Plats préparés</p>
+                        <p class="text-lg font-bold text-gray-800" id="plats-prepares">0</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="fas fa-fire text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Efficacité</p>
+                        <p class="text-lg font-bold text-gray-800">92%</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-{% endblock %}
 
-{% block javascripts %}
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Statistiques Chef -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Commandes en cours -->
+        <div class="bg-white rounded-2xl shadow-lg border border-orange-200 p-6 hover:shadow-xl transition-all hover:border-orange-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-orange-100 rounded-xl">
+                    <i class="fas fa-clipboard-list text-orange-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">12</span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Commandes en cours</h3>
+            <p class="text-gray-500 text-sm mb-4">En attente de préparation</p>
+            <a href="#commandes-en-cours" 
+               class="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium">
+                Voir les commandes
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+
+        <!-- Plats en préparation -->
+        <div class="bg-white rounded-2xl shadow-lg border border-yellow-200 p-6 hover:shadow-xl transition-all hover:border-yellow-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-yellow-100 rounded-xl">
+                    <i class="fas fa-blender text-yellow-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">8</span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Plats en préparation</h3>
+            <p class="text-gray-500 text-sm mb-4">En cours de cuisson</p>
+            <a href="#preparation" 
+               class="inline-flex items-center text-yellow-600 hover:text-yellow-700 font-medium">
+                Suivre la préparation
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+
+        <!-- Prêts à servir -->
+        <div class="bg-white rounded-2xl shadow-lg border border-green-200 p-6 hover:shadow-xl transition-all hover:border-green-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-green-100 rounded-xl">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">15</span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Prêts à servir</h3>
+            <p class="text-gray-500 text-sm mb-4">Attendent livraison</p>
+            <a href="#prets-a-servir" 
+               class="inline-flex items-center text-green-600 hover:text-green-700 font-medium">
+                Marquer comme servi
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+
+        <!-- Alertes Stock -->
+        <div class="bg-white rounded-2xl shadow-lg border border-red-200 p-6 hover:shadow-xl transition-all hover:border-red-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-red-100 rounded-xl">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">3</span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Alertes stock</h3>
+            <p class="text-gray-500 text-sm mb-4">Ingrédients à réapprovisionner</p>
+            <a href="#alertes" 
+               class="inline-flex items-center text-red-600 hover:text-red-700 font-medium">
+                Voir les alertes
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Interface principale en deux colonnes -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Colonne 1: Commandes urgentes -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-red-600">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-3">
+                        <i class="fas fa-fire text-white"></i>
+                        Commandes urgentes (15 min)
+                    </h2>
+                </div>
+                
+                <div class="p-6">
+                    <div class="space-y-4">
+                        {% for i in 1..3 %}
+                        <div class="border border-orange-200 rounded-xl p-4 bg-orange-50">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-800">Commande #{{ 100 + i }}</span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 animate-pulse">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Urgent
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-500">Temps restant</div>
+                                    <div class="font-bold text-red-600">12:{{ 45 - i*5 }} min</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="text-sm text-gray-600 mb-1">Plats :</div>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-3 py-1 bg-white border border-orange-200 rounded-lg text-sm">
+                                        <i class="fas fa-utensils mr-2 text-orange-500"></i>
+                                        Couscous Royal
+                                    </span>
+                                    <span class="px-3 py-1 bg-white border border-orange-200 rounded-lg text-sm">
+                                        <i class="fas fa-utensils mr-2 text-orange-500"></i>
+                                        Tagine poulet
+                                    </span>
+                                    <span class="px-3 py-1 bg-white border border-orange-200 rounded-lg text-sm">
+                                        <i class="fas fa-utensils mr-2 text-orange-500"></i>
+                                        Pastilla
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">
+                                    <i class="fas fa-user mr-1"></i>
+                                    Table #{{ i+5 }}
+                                </span>
+                                <button class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white 
+                                        rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Marquer comme prêt
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne 2: Informations Chef -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                <!-- Carte Chef -->
+                <div class="relative">
+                    <div class="h-32 bg-gradient-to-r from-orange-500 to-red-600"></div>
+                    <div class="absolute top-16 left-1/2 transform -translate-x-1/2">
+                        <div class="w-24 h-24 bg-gradient-to-br from-orange-400 to-red-500 rounded-full 
+                                    border-4 border-white shadow-lg flex items-center justify-center">
+                            <i class="fas fa-chef-hat text-white text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pt-16 pb-6 px-6 text-center">
+                    <h3 class="text-xl font-bold text-gray-800 mb-1">Chef {{ app.user.prenom }}</h3>
+                    <p class="text-gray-600 mb-4">Chef principal cuisine</p>
+                    
+                    <div class="flex justify-center mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-orange-600">4.9</div>
+                                <div class="text-sm text-gray-500">Note</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-orange-600">156</div>
+                                <div class="text-sm text-gray-500">Jours</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-orange-600">98%</div>
+                                <div class="text-sm text-gray-500">Satisfaction</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">
+                                <i class="fas fa-certificate text-orange-500 mr-2"></i>
+                                Diplôme Culinaire
+                            </span>
+                            <span class="font-medium">Étoilé</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">
+                                <i class="fas fa-clock text-orange-500 mr-2"></i>
+                                Service depuis
+                            </span>
+                            <span class="font-medium">08:00</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">
+                                <i class="fas fa-star text-orange-500 mr-2"></i>
+                                Spécialité
+                            </span>
+                            <span class="font-medium">Cuisine marocaine</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques rapides -->
+            <div class="mt-6 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-chart-line"></i>
+                    Stats du jour
+                </h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-gray-300 mb-1">
+                            <span>Commandes traitées</span>
+                            <span class="font-bold">24/28</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between text-gray-300 mb-1">
+                            <span>Temps moyen</span>
+                            <span class="font-bold">18 min</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between text-gray-300 mb-1">
+                            <span>Qualité service</span>
+                            <span class="font-bold">Excellent</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full" style="width: 95%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides Chef -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <i class="fas fa-bolt text-orange-500"></i>
+            Actions rapides
+        </h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="#menu" 
+               class="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 
+                      text-white p-5 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-white/20 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-book text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Menu du jour</h3>
+                    <p class="text-orange-100 text-xs">Vérifier disponibilités</p>
+                </div>
+            </a>
+            
+            <a href="#inventaire" 
+               class="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
+                      text-white p-5 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-white/20 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-boxes text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Inventaire</h3>
+                    <p class="text-blue-100 text-xs">Gérer les stocks</p>
+                </div>
+            </a>
+            
+            <a href="#recettes" 
+               class="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 
+                      text-white p-5 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-white/20 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-book-open text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Recettes</h3>
+                    <p class="text-green-100 text-xs">Consulter fiches</p>
+                </div>
+            </a>
+            
+            <a href="#equipe" 
+               class="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 
+                      text-white p-5 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-white/20 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-1">Équipe cuisine</h3>
+                    <p class="text-purple-100 text-xs">Coordination</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Timeline des commandes -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                <i class="fas fa-history text-orange-500"></i>
+                Chronologie des commandes
+            </h2>
+        </div>
+        
+        <div class="p-6">
+            <div class="relative">
+                <!-- Timeline -->
+                <div class="space-y-6">
+                    {% for i in 1..4 %}
+                    <div class="flex items-start gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-r 
+                                {% if i == 1 %}from-green-500 to-green-600
+                                {% elseif i == 2 %}from-blue-500 to-blue-600
+                                {% elseif i == 3 %}from-orange-500 to-orange-600
+                                {% else %}from-gray-500 to-gray-600{% endif %} 
+                                flex items-center justify-center">
+                                <i class="fas 
+                                    {% if i == 1 %}fa-check
+                                    {% elseif i == 2 %}fa-clock
+                                    {% elseif i == 3 %}fa-fire
+                                    {% else %}fa-utensils{% endif %} 
+                                    text-white text-sm">
+                                </i>
+                            </div>
+                            {% if i < 4 %}
+                            <div class="w-0.5 h-12 bg-gray-300 mt-2"></div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">
+                                        {% if i == 1 %}Commande #103 - Prête à servir
+                                        {% elseif i == 2 %}Commande #104 - En cuisson
+                                        {% elseif i == 3 %}Commande #105 - Préparation
+                                        {% else %}Commande #106 - Reçue{% endif %}
+                                    </h4>
+                                    <p class="text-gray-600 text-sm mt-1">
+                                        {% if i == 1 %}Table 12 - 4 personnes
+                                        {% elseif i == 2 %}Table 8 - 2 personnes
+                                        {% elseif i == 3 %}Livraison - 3 plats
+                                        {% else %}Table 15 - 6 personnes{% endif %}
+                                    </p>
+                                </div>
+                                <span class="text-sm text-gray-500">
+                                    {{ "now"|date_modify("-#{i*10} minutes")|date("H:i") }}
+                                </span>
+                            </div>
+                            
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs">
+                                    {% if i == 1 %}Prêt en 15 min
+                                    {% elseif i == 2 %}Temps estimé 25 min
+                                    {% elseif i == 3 %}Délai standard
+                                    {% else %}Nouvelle commande{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts Chef -->
+<script>
+// Compteur de plats préparés
+let platsPrepares = 0;
+const platsElement = document.getElementById('plats-prepares');
+const platsTarget = 47;
+
+function updatePlatsCounter() {
+    if (platsPrepares < platsTarget) {
+        platsPrepares += Math.floor(Math.random() * 3) + 1;
+        if (platsPrepares > platsTarget) platsPrepares = platsTarget;
+        platsElement.textContent = platsPrepares;
+    }
+}
+
+// Simuler des commandes en temps réel
+function simulateOrders() {
+    const urgentOrders = document.querySelectorAll('.animate-pulse');
+    urgentOrders.forEach(order => {
+        const randomTime = Math.floor(Math.random() * 60) + 1;
+        setTimeout(() => {
+            order.classList.remove('bg-red-100', 'text-red-800');
+            order.classList.add('bg-green-100', 'text-green-800');
+            order.innerHTML = '<i class="fas fa-check mr-1"></i> Terminée';
+            updatePlatsCounter();
+        }, randomTime * 1000);
+    });
+}
+
+// Timer pour les commandes urgentes
+function updateUrgentTimers() {
+    const timers = document.querySelectorAll('.font-bold.text-red-600');
+    timers.forEach(timer => {
+        const currentTime = timer.textContent.split(':');
+        let minutes = parseInt(currentTime[0]);
+        let seconds = parseInt(currentTime[1].split(' ')[0]);
+        
+        if (seconds > 0) {
+            seconds--;
+        } else {
+            if (minutes > 0) {
+                minutes--;
+                seconds = 59;
+            }
+        }
+        
+        timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} min`;
+    });
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation d'entrée
+    const cards = document.querySelectorAll('.bg-white.rounded-2xl');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+    
+    // Démarrage des simulateurs
+    setInterval(updatePlatsCounter, 5000);
+    setInterval(updateUrgentTimers, 60000);
+    simulateOrders();
+    
+    // Mettre à jour initialement
+    updatePlatsCounter();
+});
+
+// Notification pour nouvelle commande
+function notifyNewOrder() {
+    if (Notification.permission === "granted") {
+        new Notification("Nouvelle commande !", {
+            body: "Une nouvelle commande urgente est arrivée",
+            icon: "/images/chef-icon.png"
+        });
+    }
+}
+
+// Demander la permission des notifications
+if (Notification.permission === "default") {
+    Notification.requestPermission();
+}
+</script>
+
+<!-- Styles Chef -->
+<style>
+    /* Animation spéciale pour Chef */
+    .chef-gradient {
+        background: linear-gradient(135deg, #ff8a00 0%, #da1b60 100%);
+        background-size: 200% 200%;
+        animation: chefGradient 15s ease infinite;
+    }
+    
+    @keyframes chefGradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Animation de flamme pour les urgences */
+    @keyframes flame {
+        0%, 100% { 
+            color: #ef4444;
+            transform: scale(1);
+        }
+        50% { 
+            color: #f59e0b;
+            transform: scale(1.1);
+        }
+    }
+    
+    .fa-fire {
+        animation: flame 1s infinite;
+    }
+    
+    /* Style pour les cartes de commande */
+    .order-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .order-card:hover {
+        border-left-color: #f59e0b;
+        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.1);
+    }
+    
+    /* Badge animé pour les urgences */
+    .urgent-badge {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { 
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% { 
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+        100% { 
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+    }
+</style>
 {% endblock %}

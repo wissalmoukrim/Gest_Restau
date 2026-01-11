@@ -169,7 +169,7 @@ class PanierController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Commande #' . $commande->getId() . ' passée avec succès !');
-        return $this->redirectToRoute('client_commande_show', ['id' => $commande->getId()]);
+        return $this->redirectToRoute('client_commande_confirmation', ['id' => $commande->getId()]);
     }
 
     #[Route('/commande/{id}/show', name: 'client_commande_show')]
@@ -185,18 +185,58 @@ class PanierController extends AbstractController
         ]);
     }
 
-    #[Route('/mes-commandes', name: 'client_commandes')]
-    public function mesCommandes(): Response
-    {
-        $user = $this->getUser();
-        $commandes = $user->getCommandes()->toArray();
-
-        usort($commandes, fn($a, $b) => $b->getDate() <=> $a->getDate());
-
-        return $this->render('client/commande/liste.html.twig', [
-            'commandes' => $commandes,
-        ]);
+    #[Route('/commande/{id}/confirmation', name: 'client_commande_confirmation')]
+public function confirmation(Commande $commande): Response
+{
+    $user = $this->getUser();
+    
+    // Vérifie que l'utilisateur est bien le propriétaire de la commande
+    if ($commande->getUser() !== $user) {
+        throw $this->createAccessDeniedException('Accès non autorisé');
     }
+
+    return $this->render('client/commande/confirmation.html.twig', [
+        'commande' => $commande,
+    ]);
+}
+
+#[Route('/ma-derniere-facture', name: 'client_derniere_facture')]
+public function derniereFacture(EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    
+    // Trouver la dernière commande de l'utilisateur
+    $commande = $em->getRepository(Commande::class)->findOneBy(
+        ['user' => $user],
+        ['date' => 'DESC']
+    );
+    
+    if (!$commande) {
+        $this->addFlash('warning', 'Vous n\'avez pas encore de commande');
+        return $this->redirectToRoute('client_commandes');
+    }
+    
+    return $this->redirectToRoute('client_commande_confirmation', [
+        'id' => $commande->getId()
+    ]);
+}
+
+
+#[Route('/mes-commandes', name: 'client_commandes')]
+public function mesCommandes(EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    
+    // Solution la plus fiable et performante
+    $commandes = $em->getRepository(Commande::class)->findBy(
+        ['user' => $user],
+        ['date' => 'DESC']
+    );
+    
+    return $this->render('client/commande/liste.html.twig', [
+        'commandes' => $commandes,
+    ]);
+}
 
     #[Route('/commande/{id}/annuler', name: 'client_commande_annuler', methods: ['POST'])]
     public function annulerCommande(Commande $commande, EntityManagerInterface $em): Response
@@ -217,4 +257,30 @@ class PanierController extends AbstractController
         $this->addFlash('success', 'Commande #' . $commande->getId() . ' annulée avec succès');
         return $this->redirectToRoute('client_commandes');
     }
+#[Route('/commande/{id}/supprimer', name: 'client_commande_supprimer', methods: ['POST'])]
+public function supprimerCommande(Commande $commande, EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    
+    if ($commande->getUser() !== $user) {
+        throw $this->createAccessDeniedException('Accès non autorisé');
+    }
+    
+    if ($commande->getStatut() !== 'annulee') {
+        $this->addFlash('error', 'Seules les commandes annulées peuvent être supprimées');
+        return $this->redirectToRoute('client_commande_show', ['id' => $commande->getId()]);
+    }
+    
+    // Supprimer d'abord tous les items
+    foreach ($commande->getCommandeItems() as $item) {
+        $em->remove($item);
+    }
+    
+    // Puis supprimer la commande
+    $em->remove($commande);
+    $em->flush();
+    
+    $this->addFlash('success', 'Commande #' . $commande->getId() . ' supprimée définitivement');
+    return $this->redirectToRoute('client_commandes');
+}
 }

@@ -11,25 +11,30 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ChefController extends AbstractController
 {
-        #[Route('/chef/dashboard', name: 'chef_dashboard')]
+    #[Route('/chef/dashboard', name: 'chef_dashboard')]
     public function index(EntityManagerInterface $em): Response
     {
-        $commandes = $em->getRepository(Commande::class)->findAll();
+        // MODIFIEZ CETTE LIGNE :
+        $commandes = $em->getRepository(Commande::class)
+            ->createQueryBuilder('c')
+            ->leftJoin('c.user', 'u')
+            ->where('u IS NOT NULL')  // ← IMPORTANT: exclut les commandes sans utilisateur
+            ->andWhere('c.statut != :termine')
+            ->setParameter('termine', 'terminee')
+            ->orderBy('c.date', 'DESC')
+            ->getQuery()
+            ->getResult();
 
         return $this->render('chef/index.html.twig', [
             'commandes' => $commandes,
         ]);
     }
+
     #[Route('/chef/interface', name: 'chef_interface')]
-    #[IsGranted('ROLE_CHEF')]
     public function interface(): Response
     {
         return $this->render('chef/interface.html.twig');
     }
-
-
-
-
 
     #[Route('/chef/commande/{id}/update-status', name: 'chef_update_commande', methods: ['POST'])]
     public function updateStatus(Commande $commande, Request $request, EntityManagerInterface $em): Response

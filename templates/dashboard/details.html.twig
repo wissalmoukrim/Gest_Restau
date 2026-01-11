@@ -2,166 +2,602 @@
 
 {% block title %}{{ plat.nom }} - Gest Restau{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .gradient-border {
+        position: relative;
+        background: linear-gradient(to right, #0f172a, #1e293b);
+        border-radius: 20px;
+        padding: 1px;
+    }
+    
+    .gradient-border > div {
+        background: #0f172a;
+        border-radius: 19px;
+        overflow: hidden;
+    }
+    
+    .floating-label {
+        position: relative;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .star-rating .star {
+        color: #fbbf24;
+        transition: transform 0.2s;
+    }
+    
+    .star-rating .star:hover {
+        transform: scale(1.2);
+    }
+    
+    .ingredient-item {
+        transition: all 0.3s ease;
+    }
+    
+    .ingredient-item:hover {
+        background: rgba(251, 191, 36, 0.1);
+        transform: translateX(5px);
+    }
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="container mx-auto px-4 py-8">
-    <!-- Bouton Retour -->
-    <div class="mb-6">
-        <a href="{{ path('dashboard') }}" 
-           class="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 hover:underline">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Retour à la carte
-        </a>
-    </div>
-
-    <!-- Carte détaillée du plat -->
-    <div class="bg-black border border-amber-800 rounded-2xl overflow-hidden shadow-2xl">
-        <div class="flex flex-col lg:flex-row">
-            <!-- Colonne Image -->
-            <div class="lg:w-1/2 relative">
-                {% if plat.image %}
-                    <img src="{{ asset('uploads/' ~ plat.image) }}" 
-                         class="w-full h-96 lg:h-full object-cover" 
-                         alt="{{ plat.nom }}">
-                {% else %}
-                    <div class="w-full h-96 lg:h-full bg-gradient-to-br from-amber-900 to-black flex items-center justify-center">
-                        <span class="text-8xl text-amber-600">🍛</span>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Navigation améliorée -->
+        <div class="mb-8">
+            <nav class="flex items-center space-x-4 text-sm">
+                <a href="{{ path('dashboard') }}" 
+                   class="flex items-center gap-2 text-gray-400 hover:text-amber-300 transition group">
+                    <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center 
+                                group-hover:bg-amber-900/30 transition">
+                        <i class="fas fa-home text-sm"></i>
                     </div>
-                {% endif %}
-                
-                <!-- Badge Spécialité -->
-                <div class="absolute top-4 right-4 bg-amber-600 text-black px-4 py-2 rounded-full font-bold shadow-lg">
-                    ★ Spécialité
-                </div>
-            </div>
-
-            <!-- Colonne Informations -->
-            <div class="lg:w-1/2 p-8">
-                <!-- En-tête -->
-                <div class="mb-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="bg-amber-900 text-amber-300 px-4 py-2 rounded-full text-sm font-bold">
-                            {{ plat.categorie ?? 'Plat principal' }}
-                        </span>
-                        <span class="text-3xl font-bold text-amber-300">{{ plat.prix }} DH</span>
+                    <span>Dashboard</span>
+                </a>
+                <span class="text-gray-600">›</span>
+                <a href="{{ path('app_admin_plat') }}" 
+                   class="flex items-center gap-2 text-gray-400 hover:text-amber-300 transition group">
+                    <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center 
+                                group-hover:bg-amber-900/30 transition">
+                        <i class="fas fa-utensils text-sm"></i>
                     </div>
-                    
-                    <h1 class="text-4xl font-bold text-amber-200 mb-4">{{ plat.nom }}</h1>
-                    
-                    <!-- Disponibilité -->
-                    <div class="mb-6">
-                        {% if plat.disponible %}
-                            <span class="inline-flex items-center gap-2 text-green-400 bg-green-900/30 px-4 py-2 rounded-lg">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                Disponible à la commande
-                            </span>
-                        {% else %}
-                            <span class="inline-flex items-center gap-2 text-red-400 bg-red-900/30 px-4 py-2 rounded-lg">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                Temporairement indisponible
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
+                    <span>Plats</span>
+                </a>
+                <span class="text-gray-600">›</span>
+                <span class="text-amber-300 font-medium truncate max-w-xs">{{ plat.nom }}</span>
+            </nav>
+        </div>
 
-                <!-- Description -->
-                <div class="mb-8">
-                    <h3 class="text-2xl font-bold text-amber-300 mb-4 flex items-center gap-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Description
-                    </h3>
-                    <div class="bg-amber-950/50 border border-amber-800 rounded-xl p-6">
-                        <p class="text-amber-300 text-lg leading-relaxed">
-                            {{ plat.description ?? 'Ce délicieux plat est préparé avec soin par nos chefs expérimentés. Ingrédients frais et sélectionnés avec rigueur pour vous offrir une expérience culinaire exceptionnelle.' }}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Section Commandes -->
-                <div class="border-t border-amber-800 pt-6">
-                    <h3 class="text-2xl font-bold text-amber-300 mb-6">Passer commande</h3>
-                    
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <!-- Bouton Ajouter au panier -->
-                        {% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
-                            {% if plat.disponible %}
-                                <form method="POST" action="{{ path('client_panier_add', {id: plat.id}) }}" class="flex-1">
-                                    <button type="submit" 
-                                            class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 shadow-lg">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                        </svg>
-                                        Ajouter au panier
-                                    </button>
-                                </form>
-                            {% else %}
-                                <button disabled
-                                        class="w-full bg-gray-700 text-gray-400 px-8 py-4 rounded-xl font-bold text-lg cursor-not-allowed flex items-center justify-center gap-3">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                    </svg>
-                                    Indisponible
-                                </button>
-                            {% endif %}
-                        {% elseif not app.user %}
-                            <!-- Pour les non connectés -->
-                            <div class="flex-1">
-                                <a href="{{ path('app_login') }}" 
-                                   class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 shadow-lg block">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                                    </svg>
-                                    Se connecter pour commander
-                                </a>
+        <!-- Header avec stats -->
+        <div class="mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div>
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="relative">
+                            <div class="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-700 
+                                        rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-utensils text-white text-2xl"></i>
                             </div>
-                        {% endif %}
-
-                        <!-- Bouton Retour -->
-                        <a href="{{ path('dashboard') }}" 
-                           class="border-2 border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-black px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                            </svg>
-                            Retour
-                        </a>
+                            {% if plat.disponible %}
+                            <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full 
+                                        border-2 border-gray-900"></div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h1 class="text-3xl lg:text-4xl font-bold text-white mb-1">{{ plat.nom }}</h1>
+                            <div class="flex items-center gap-3">
+                                <span class="px-3 py-1 bg-gradient-to-r from-amber-900/50 to-amber-800/30 
+                                            text-amber-300 rounded-full text-sm border border-amber-700/50">
+                                    ID: {{ plat.id }}
+                                </span>
+                                <span class="text-gray-400 text-sm">
+                                <i class="fas fa-clock mr-1"></i>
+                                Ajouté récemment
+                                </span>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="flex flex-wrap gap-3">
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_plat_edit', {id: plat.id}) }}" 
+                       class="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 
+                              hover:from-amber-700 hover:to-amber-800 text-white rounded-xl font-medium 
+                              transition-all duration-300 hover:shadow-lg">
+                        <i class="fas fa-edit"></i>
+                        <span>Modifier</span>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ path('dashboard') }}" 
+                       class="group flex items-center gap-2 px-5 py-2.5 border-2 border-amber-600 
+                              text-amber-400 hover:bg-amber-600 hover:text-black rounded-xl font-medium 
+                              transition-all duration-300">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Retour</span>
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Section Informations supplémentaires -->
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-amber-900/30 border border-amber-800 rounded-xl p-6">
-            <div class="flex items-center gap-3 mb-3">
-                <span class="text-2xl">⏱️</span>
-                <h4 class="text-lg font-bold text-amber-300">Temps de préparation</h4>
+        <!-- Contenu principal -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Colonne gauche : Image et informations principales -->
+            <div class="lg:col-span-2">
+                <!-- Image principale -->
+                <div class="gradient-border mb-8">
+                    <div>
+                        {% if plat.image %}
+                        <div class="relative h-96 overflow-hidden">
+                            <img src="{{ asset('uploads/' ~ plat.image) }}" 
+                                 alt="{{ plat.nom }}"
+                                 class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                            
+                            <!-- Badges sur image -->
+                            <div class="absolute top-4 left-4">
+                                {% if plat.disponible %}
+                                <span class="floating-label inline-flex items-center gap-2 px-4 py-2 
+                                           bg-gradient-to-r from-green-500 to-emerald-600 text-white 
+                                           rounded-full font-bold text-sm shadow-lg">
+                                    <i class="fas fa-check-circle"></i>
+                                    Disponible
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-2 px-4 py-2 
+                                           bg-gradient-to-r from-red-500 to-rose-600 text-white 
+                                           rounded-full font-bold text-sm shadow-lg">
+                                    <i class="fas fa-times-circle"></i>
+                                    Indisponible
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Prix sur image -->
+                            <div class="absolute bottom-4 right-4">
+                                <div class="flex flex-col items-end">
+                                    <span class="text-4xl font-bold text-white">
+                                        {{ plat.prix }} <span class="text-amber-300">DH</span>
+                                    </span>
+                                    <span class="text-sm text-gray-300">Prix TTC</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="h-96 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-amber-900 to-amber-950 
+                                            rounded-full flex items-center justify-center">
+                                    <i class="fas fa-utensils text-amber-500 text-4xl"></i>
+                                </div>
+                                <p class="text-gray-400">Aucune image disponible</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Description détaillée -->
+                <div class="gradient-border mb-8">
+                    <div class="p-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 
+                                        rounded-xl flex items-center justify-center">
+                                <i class="fas fa-align-left text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">Description</h2>
+                                <p class="text-gray-400">Détails et spécificités du plat</p>
+                            </div>
+                        </div>
+                        
+                        <div class="prose prose-lg max-w-none">
+                            <p class="text-gray-300 text-lg leading-relaxed">
+                                {{ plat.description ?? 'Ce plat exceptionnel est préparé avec passion et expertise par nos chefs. Chaque ingrédient est soigneusement sélectionné pour garantir une qualité et un goût incomparables. Une expérience culinaire qui marque les papilles et crée des souvenirs.' }}
+                            </p>
+                            
+                            <!-- Informations supplémentaires -->
+                            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 
+                                            rounded-xl border border-gray-700/50">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <i class="fas fa-clock text-amber-400"></i>
+                                        <span class="font-medium text-gray-300">Préparation</span>
+                                    </div>
+                                    <p class="text-gray-400">20-30 minutes</p>
+                                </div>
+                                
+                                <div class="p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 
+                                            rounded-xl border border-gray-700/50">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <i class="fas fa-thermometer-half text-amber-400"></i>
+                                        <span class="font-medium text-gray-300">Niveau</span>
+                                    </div>
+                                    <p class="text-gray-400">Moyen</p>
+                                </div>
+                                
+                                <div class="p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 
+                                            rounded-xl border border-gray-700/50">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <i class="fas fa-user-chef text-amber-400"></i>
+                                        <span class="font-medium text-gray-300">Chef</span>
+                                    </div>
+                                    <p class="text-gray-400">Spécialiste cuisine</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p class="text-amber-400">20-30 minutes</p>
+
+            <!-- Colonne droite : Actions et informations secondaires -->
+            <div class="space-y-8">
+                <!-- Box Commande -->
+                <div class="gradient-border">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 
+                                        rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shopping-cart text-white"></i>
+                            </div>
+                            Commander
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            {% if app.user and (is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')) %}
+                                {% if plat.disponible %}
+                                <!-- Sélecteur de quantité -->
+                                <div class="mb-6">
+                                    <label class="block text-gray-400 mb-2">Quantité</label>
+                                    <div class="flex items-center border border-gray-700 rounded-xl overflow-hidden">
+                                        <button class="quantity-btn flex-1 py-3 bg-gray-800 text-gray-400 
+                                                    hover:bg-gray-700 hover:text-white transition"
+                                                onclick="updateQuantity(-1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="number" id="quantity" value="1" min="1" max="10" 
+                                               class="flex-1 w-16 text-center bg-transparent text-white 
+                                                      border-none focus:outline-none text-xl">
+                                        <button class="quantity-btn flex-1 py-3 bg-gray-800 text-gray-400 
+                                                    hover:bg-gray-700 hover:text-white transition"
+                                                onclick="updateQuantity(1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bouton Ajouter au panier -->
+                                <button onclick="addToCart({{ plat.id }})" 
+                                        class="w-full group relative overflow-hidden bg-gradient-to-r 
+                                               from-amber-500 to-amber-600 text-black font-bold py-4 
+                                               rounded-xl hover:shadow-2xl transition-all duration-300 
+                                               hover:-translate-y-1 flex items-center justify-center gap-3">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-amber-600 to-amber-700 
+                                                opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    </div>
+                                    <div class="relative z-10 flex items-center gap-3">
+                                        <i class="fas fa-cart-plus text-xl"></i>
+                                        <span class="text-lg">Ajouter au panier</span>
+                                    </div>
+                                </button>
+                                
+                                <!-- Calcul du total -->
+                                <div class="mt-4 p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 
+                                            rounded-xl border border-gray-700/50">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Total estimé</span>
+                                        <span class="text-2xl font-bold text-amber-300" id="totalPrice">
+                                            {{ plat.prix }} DH
+                                        </span>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-8">
+                                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-900/50 to-red-800/30 
+                                                rounded-full flex items-center justify-center">
+                                        <i class="fas fa-times text-red-400 text-2xl"></i>
+                                    </div>
+                                    <h4 class="text-xl font-bold text-red-400 mb-2">Indisponible</h4>
+                                    <p class="text-gray-400">
+                                        Ce plat n'est pas disponible pour le moment.
+                                    </p>
+                                </div>
+                                {% endif %}
+                            {% elseif not app.user %}
+                            <!-- Non connecté -->
+                            <div class="text-center py-6">
+                                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-900/50 to-blue-800/30 
+                                            rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user-lock text-blue-400 text-2xl"></i>
+                                </div>
+                                <h4 class="text-xl font-bold text-white mb-3">Connectez-vous</h4>
+                                <p class="text-gray-400 mb-6">
+                                    Pour commander ce plat, veuillez vous connecter à votre compte.
+                                </p>
+                                <div class="space-y-3">
+                                    <a href="{{ path('app_login') }}" 
+                                       class="block w-full bg-gradient-to-r from-amber-500 to-amber-600 
+                                              text-black font-bold py-3 rounded-xl hover:shadow-lg 
+                                              transition text-center">
+                                        Se connecter
+                                    </a>
+                                    <a href="{{ path('app_register') }}" 
+                                       class="block w-full border-2 border-amber-600 text-amber-400 
+                                              font-bold py-3 rounded-xl hover:bg-amber-600 hover:text-black 
+                                              transition text-center">
+                                        Créer un compte
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box Catégorie et tags -->
+                <div class="gradient-border">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 
+                                        rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tags text-white"></i>
+                            </div>
+                            Catégories
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-gray-400 mb-2 block">Catégorie principale</span>
+                                <span class="inline-flex items-center px-4 py-2 bg-gradient-to-r 
+                                           from-purple-900/50 to-purple-800/30 text-purple-300 
+                                           rounded-full border border-purple-700/50">
+                                    <i class="fas fa-folder mr-2"></i>
+                                    {{ plat.categorie ?? 'Non catégorisé' }}
+                                </span>
+                            </div>
+                            
+                            <div>
+                                <span class="text-gray-400 mb-2 block">Tags</span>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r 
+                                               from-gray-800 to-gray-900 text-gray-300 rounded-full 
+                                               border border-gray-700 text-sm">
+                                        <i class="fas fa-fire text-amber-500 mr-1"></i>
+                                        Populaire
+                                    </span>
+                                    <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r 
+                                               from-gray-800 to-gray-900 text-gray-300 rounded-full 
+                                               border border-gray-700 text-sm">
+                                        <i class="fas fa-leaf text-green-500 mr-1"></i>
+                                        Frais
+                                    </span>
+                                    <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r 
+                                               from-gray-800 to-gray-900 text-gray-300 rounded-full 
+                                               border border-gray-700 text-sm">
+                                        <i class="fas fa-home text-amber-500 mr-1"></i>
+                                        Maison
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box Statistiques (si admin) -->
+                {% if is_granted('ROLE_ADMIN') %}
+                <div class="gradient-border">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 
+                                        rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-bar text-white"></i>
+                            </div>
+                            Statistiques
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-gradient-to-br 
+                                       from-gray-800/50 to-gray-900/50 rounded-xl">
+                                <span class="text-gray-400">Commandes totales</span>
+                                <span class="font-bold text-white">24</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gradient-to-br 
+                                       from-gray-800/50 to-gray-900/50 rounded-xl">
+                                <span class="text-gray-400">Revenu généré</span>
+                                <span class="font-bold text-green-400">1,240 DH</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gradient-to-br 
+                                       from-gray-800/50 to-gray-900/50 rounded-xl">
+                                <span class="text-gray-400">Note moyenne</span>
+                                <div class="star-rating flex items-center">
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star star"></i>
+                                    <i class="fas fa-star-half-alt star"></i>
+                                    <span class="ml-2 font-bold text-amber-300">4.5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        
-        <div class="bg-amber-900/30 border border-amber-800 rounded-xl p-6">
-            <div class="flex items-center gap-3 mb-3">
-                <span class="text-2xl">🔥</span>
-                <h4 class="text-lg font-bold text-amber-300">Niveau</h4>
+
+        <!-- Section recommandations -->
+        <div class="mt-12">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Plats similaires</h2>
+                    <p class="text-gray-400">Découvrez d'autres délices de notre carte</p>
+                </div>
+                <a href="{{ path('dashboard') }}" 
+                   class="text-amber-400 hover:text-amber-300 transition flex items-center gap-2">
+                    <span>Voir tout</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
-            <p class="text-amber-400">Moyen</p>
-        </div>
-        
-        <div class="bg-amber-900/30 border border-amber-800 rounded-xl p-6">
-            <div class="flex items-center gap-3 mb-3">
-                <span class="text-2xl">👨‍🍳</span>
-                <h4 class="text-lg font-bold text-amber-300">Chef</h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for i in 1..4 %}
+                <div class="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl 
+                            overflow-hidden border border-gray-700 hover:border-amber-600 
+                            transition-all duration-300">
+                    <div class="h-40 bg-gradient-to-br from-amber-900/50 to-black 
+                                flex items-center justify-center">
+                        <i class="fas fa-utensils text-amber-600 text-4xl"></i>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-white mb-2">Plat similaire {{ i }}</h4>
+                        <div class="flex justify-between items-center">
+                            <span class="text-amber-300 font-bold">49.99 DH</span>
+                            <button class="opacity-0 group-hover:opacity-100 transition-opacity 
+                                       w-8 h-8 bg-amber-600 text-black rounded-full 
+                                       flex items-center justify-center">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-            <p class="text-amber-400">Chef spécialisé</p>
         </div>
     </div>
 </div>
+
+<!-- Scripts -->
+<script>
+// Gestion de la quantité
+function updateQuantity(change) {
+    const input = document.getElementById('quantity');
+    let value = parseInt(input.value) + change;
+    value = Math.min(10, Math.max(1, value));
+    input.value = value;
+    updateTotalPrice();
+}
+
+// Mise à jour du prix total
+function updateTotalPrice() {
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const unitPrice = {{ plat.prix }};
+    const total = quantity * unitPrice;
+    document.getElementById('totalPrice').textContent = total.toFixed(2) + ' DH';
+}
+
+// Ajout au panier avec notification
+async function addToCart(platId) {
+    const quantity = parseInt(document.getElementById('quantity').value);
+    
+    try {
+        const response = await fetch('/client/panier/add/' + platId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ quantity: quantity })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('success', '✅ Ajouté au panier', 
+                           `Le plat a été ajouté avec succès (${quantity} unité${quantity > 1 ? 's' : ''})`);
+        } else {
+            showNotification('error', '❌ Erreur', 
+                           data.message || 'Impossible d\'ajouter au panier');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('error', '❌ Erreur', 'Une erreur est survenue');
+    }
+}
+
+// Fonction de notification
+function showNotification(type, title, message) {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `fixed top-6 right-6 z-50 animate-slide-in`;
+    notification.innerHTML = `
+        <div class="flex items-center p-4 mb-4 rounded-xl shadow-xl 
+                   ${type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
+                     'bg-gradient-to-r from-red-500 to-rose-600'} 
+                   text-white min-w-[300px]">
+            <div class="flex-shrink-0">
+                ${type === 'success' ? '✅' : '❌'}
+            </div>
+            <div class="ml-3">
+                <p class="font-bold">${title}</p>
+                <p class="text-sm opacity-90">${message}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    class="ml-auto text-white/80 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    // Ajouter au document
+    document.body.appendChild(notification);
+    
+    // Supprimer après 5 secondes
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Styles pour l'animation
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+}
+
+/* Input number sans flèches */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gradient-border {
+        padding: 0;
+    }
+    
+    .gradient-border > div {
+        border-radius: 16px;
+    }
+}
+`;
+document.head.appendChild(style);
+</script>
 {% endblock %}

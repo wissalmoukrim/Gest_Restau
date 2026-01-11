@@ -19,8 +19,9 @@ private ?int $id = null;
     private ?Commande $commande = null;
 
     #[ORM\ManyToOne(inversedBy: 'commandeItems')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Plat $plat = null;
+
 
     #[ORM\Column]
     private ?int $quantite = null;

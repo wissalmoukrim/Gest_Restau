@@ -1,97 +1,425 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Ajouter un plat{% endblock %}
+{% block title %}➕ Nouveau Plat{% endblock %}
 
 {% block body %}
-<div style="max-width: 600px; margin: 30px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-    <h1 style="color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; margin-bottom: 20px;">
-        ➕ Ajouter un nouveau plat
-    </h1>
-    
-    {# DÉSACTIVE TURBO et ajoute enctype pour les fichiers #}
-    {{ form_start(form, {'attr': {'data-turbo': 'false', 'enctype': 'multipart/form-data'}}) }}
-    
-    <div style="margin-bottom: 20px;">
-        {{ form_label(form.nom) }}
-        {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-    </div>
-    
-    <div style="margin-bottom: 20px;">
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
-    </div>
-    
-    <div style="margin-bottom: 20px;">
-        {{ form_label(form.prix) }}
-        <div style="display: flex; align-items: center;">
-            {{ form_widget(form.prix, {'attr': {'class': 'form-control', 'style': 'flex: 1;'}}) }}
-            <span style="margin-left: 10px; font-weight: bold; color: #666;">DH</span>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 p-4 md:p-6">
+    <div class="max-w-2xl mx-auto">
+        <!-- En-tête -->
+        <div class="mb-8">
+            <a href="{{ path('app_admin_plat') }}" 
+               class="inline-flex items-center text-gray-600 hover:text-gray-900 font-medium mb-4">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Retour à la liste
+            </a>
+            
+            <div class="flex items-center gap-4 mb-6">
+                <div class="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl">
+                    <i class="fas fa-plus-circle text-green-600 text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Nouveau plat</h1>
+                    <p class="text-gray-600">Ajouter un nouveau plat à votre menu</p>
+                </div>
+            </div>
         </div>
-        <small style="color: #888;">Entrez juste le nombre (ex: 50.00)</small>
+
+        <!-- Carte du formulaire -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+            <div class="p-6 md:p-8">
+                {{ form_start(form, {'attr': {'data-turbo': 'false', 'enctype': 'multipart/form-data', 'class': 'space-y-6'}}) }}
+
+                <!-- Informations de base -->
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200 flex items-center gap-3">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Informations du plat
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Nom -->
+                        <div>
+                            {{ form_label(form.nom, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.nom, {'attr': {
+                                    'class': 'w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition',
+                                    'placeholder': 'Nom du plat (ex: Couscous royal)'
+                                }}) }}
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-utensils text-gray-400"></i>
+                                </div>
+                            </div>
+                            {{ form_errors(form.nom) }}
+                            <p class="text-sm text-gray-500 mt-2">Nom attractif pour vos clients</p>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.description, {'attr': {
+                                    'class': 'w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition',
+                                    'placeholder': 'Description détaillée des ingrédients et de la préparation...',
+                                    'rows': 4
+                                }}) }}
+                                <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
+                                    <i class="fas fa-align-left text-gray-400"></i>
+                                </div>
+                            </div>
+                            {{ form_errors(form.description) }}
+                            <p class="text-sm text-gray-500 mt-2">Décrivez ce qui rend votre plat spécial</p>
+                        </div>
+
+                        <!-- Prix et Disponibilité -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Prix -->
+                            <div>
+                                {{ form_label(form.prix, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                <div class="relative">
+                                    {{ form_widget(form.prix, {'attr': {
+                                        'class': 'w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition',
+                                        'placeholder': '49.99'
+                                    }}) }}
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-tag text-gray-400"></i>
+                                    </div>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 font-medium">DH</span>
+                                    </div>
+                                </div>
+                                {{ form_errors(form.prix) }}
+                                <p class="text-sm text-gray-500 mt-2">Exemple : 50.00 pour 50 dirhams</p>
+                            </div>
+
+                            <!-- Disponibilité -->
+                            <div>
+                                <div class="flex items-center h-14">
+                                    <div class="flex items-center">
+                                        {{ form_widget(form.disponible, {'attr': {
+                                            'class': 'w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500'
+                                        }}) }}
+                                        <label for="{{ form.disponible.vars.id }}" 
+                                               class="ml-3 text-gray-700 font-medium cursor-pointer">
+                                            {{ form_label(form.disponible) }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {{ form_errors(form.disponible) }}
+                                <p class="text-sm text-gray-500 mt-2">Cocher pour rendre disponible immédiatement</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                        <i class="fas fa-image text-purple-500"></i>
+                        Image du plat
+                    </h2>
+                    
+                    <div>
+                        {{ form_label(form.image, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        
+                        <!-- Zone de drop améliorée -->
+                        <div class="mb-4">
+                            <!-- Input fichier masqué -->
+                            {{ form_widget(form.image, {'attr': {
+                                'class': 'hidden',
+                                'accept': 'image/*',
+                                'id': 'file-upload-input'
+                            }}) }}
+                            
+                            <!-- Zone de drop personnalisée -->
+                            <label for="file-upload-input" 
+                                   class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6 px-4">
+                                    <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-3"></i>
+                                    <p class="mb-2 text-sm text-gray-500 font-medium">
+                                        <span class="text-green-600 hover:text-green-700">Cliquez pour uploader</span> 
+                                        ou glissez-déposez
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        JPG, PNG ou WebP • Max 5MB
+                                    </p>
+                                    <!-- Nom du fichier sélectionné -->
+                                    <div id="file-name" class="mt-3 text-sm text-gray-700 font-medium hidden">
+                                        Fichier sélectionné : <span id="selected-file-name" class="text-green-600"></span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        {{ form_errors(form.image) }}
+                        
+                        <!-- Aperçu image -->
+                        <div id="image-preview" class="mt-4 hidden">
+                            <p class="text-sm font-medium text-gray-700 mb-2">Aperçu :</p>
+                            <div class="relative inline-block">
+                                <img id="preview" class="w-48 h-48 object-cover rounded-lg border border-gray-300" />
+                                <button type="button" id="remove-image" 
+                                        class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <a href="{{ path('app_admin_plat') }}"
+                           class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium 
+                                  hover:bg-gray-50 transition-colors flex items-center gap-2">
+                            <i class="fas fa-times"></i>
+                            Annuler
+                        </a>
+                        
+                        <div class="flex gap-3">
+                            <button type="reset" 
+                                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium 
+                                           hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                <i class="fas fa-redo"></i>
+                                Réinitialiser
+                            </button>
+                            
+                            <button type="submit"
+                                    class="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white 
+                                           rounded-lg font-bold hover:from-green-600 hover:to-green-700 
+                                           transition-all hover:shadow-lg flex items-center gap-2">
+                                <i class="fas fa-plus-circle"></i>
+                                Créer le plat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
     </div>
-    
-    <div style="margin-bottom: 20px; display: flex; align-items: center;">
-        {{ form_widget(form.disponible, {'attr': {'style': 'margin-right: 10px;'}}) }}
-        {{ form_label(form.disponible) }}
-    </div>
-    
-    <div style="margin-bottom: 25px;">
-        {{ form_label(form.image) }}
-        {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
-        <small style="color: #888;">Formats acceptés: JPG, PNG, WebP</small>
-    </div>
-    
-    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-        <button type="submit" 
-                style="background: #4CAF50; color: white; border: none; padding: 12px 30px; 
-                       border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold;
-                       transition: background 0.3s;"
-                onmouseover="this.style.background='#45a049'"
-                onmouseout="this.style.background='#4CAF50'">
-            ✅ Ajouter le plat
-        </button>
-        
-        <a href="{{ path('app_admin_plat') }}" 
-           style="margin-left: 15px; color: #666; text-decoration: none; padding: 12px 20px;
-                  border: 1px solid #ddd; border-radius: 4px; display: inline-block;">
-            ↩ Retour à la liste
-        </a>
-    </div>
-    
-    {{ form_end(form) }}
 </div>
 
+<!-- Script pour l'aperçu d'image -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file-upload-input');
+    const fileNameDisplay = document.getElementById('file-name');
+    const selectedFileName = document.getElementById('selected-file-name');
+    const previewContainer = document.getElementById('image-preview');
+    const previewImage = document.getElementById('preview');
+    const removeImageBtn = document.getElementById('remove-image');
+    
+    // Gestion du drag and drop
+    const dropZone = document.querySelector('label[for="file-upload-input"]');
+    
+    if (dropZone) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('border-green-500', 'bg-green-50');
+            dropZone.classList.remove('border-gray-300', 'bg-gray-50');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('border-green-500', 'bg-green-50');
+            dropZone.classList.add('border-gray-300', 'bg-gray-50');
+        }
+        
+        // Gestion du drop
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        }
+    }
+    
+    // Gestion du click
+    if (fileInput) {
+        fileInput.addEventListener('change', function(event) {
+            if (this.files && this.files[0]) {
+                handleFileSelect(this.files[0]);
+            }
+        });
+    }
+    
+    function handleFileSelect(file) {
+        // Vérification du type de fichier
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Veuillez sélectionner une image valide (JPG, PNG ou WebP)');
+            resetFileInput();
+            return;
+        }
+        
+        // Vérification de la taille (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('L\'image est trop volumineuse. Maximum 5MB');
+            resetFileInput();
+            return;
+        }
+        
+        // Afficher le nom du fichier
+        selectedFileName.textContent = file.name;
+        fileNameDisplay.classList.remove('hidden');
+        
+        // Afficher l'aperçu
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+        }
+        
+        reader.readAsDataURL(file);
+    }
+    
+    // Bouton pour supprimer l'image
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', function() {
+            resetFileInput();
+            previewContainer.classList.add('hidden');
+            fileNameDisplay.classList.add('hidden');
+        });
+    }
+    
+    function resetFileInput() {
+        fileInput.value = '';
+        
+        // Pour réinitialiser l'input file en JavaScript
+        const newInput = fileInput.cloneNode(true);
+        fileInput.parentNode.replaceChild(newInput, fileInput);
+        
+        // Réattacher l'event listener
+        newInput.addEventListener('change', function(event) {
+            if (this.files && this.files[0]) {
+                handleFileSelect(this.files[0]);
+            }
+        });
+        
+        // Mettre à jour la référence
+        fileInput = newInput;
+    }
+    
+    // Validation du prix
+    const priceInput = document.getElementById('{{ form.prix.vars.id }}');
+    if (priceInput) {
+        priceInput.addEventListener('input', function(e) {
+            // Remplace les virgules par des points
+            this.value = this.value.replace(',', '.');
+            
+            // Valide que c'est un nombre
+            if (isNaN(parseFloat(this.value)) && this.value !== '') {
+                this.classList.add('border-red-500');
+            } else {
+                this.classList.remove('border-red-500');
+            }
+        });
+    }
+    
+    // Réinitialisation du formulaire
+    const resetButton = document.querySelector('button[type="reset"]');
+    if (resetButton) {
+        resetButton.addEventListener('click', function() {
+            setTimeout(function() {
+                previewContainer.classList.add('hidden');
+                fileNameDisplay.classList.add('hidden');
+                resetFileInput();
+            }, 100);
+        });
+    }
+});
+</script>
+
 <style>
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        margin: 8px 0 5px 0;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-        box-sizing: border-box;
+    /* Style amélioré pour la zone de drop */
+    label[for="file-upload-input"] {
+        transition: all 0.3s ease;
     }
     
-    .form-control:focus {
-        border-color: #4CAF50;
-        outline: none;
-        box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+    label[for="file-upload-input"]:hover {
+        border-color: #10b981 !important;
+        background-color: #f0fdf4 !important;
     }
     
+    /* Animation pour les labels */
     label {
-        font-weight: bold;
-        color: #555;
-        margin-bottom: 5px;
-        display: block;
+        transition: color 0.2s ease;
+    }
+
+    /* Style pour les champs requis */
+    label.required:after {
+        content: " *";
+        color: #ef4444;
+    }
+
+    /* Style pour les messages d'erreur */
+    .form-error {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-error:before {
+        content: "⚠️";
+        font-size: 0.75rem;
     }
     
-    small {
-        font-size: 13px;
+    /* Style pour l'image de prévisualisation */
+    #preview {
+        transition: transform 0.3s ease;
     }
     
-    .form-check-label {
-        font-weight: normal;
-        color: #333;
+    #preview:hover {
+        transform: scale(1.02);
+    }
+    
+    /* Style pour le bouton de suppression d'image */
+    #remove-image {
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #remove-image:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* Style pour les champs focus */
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        ring-width: 2px;
+    }
+    
+    /* Style pour les messages d'aide */
+    .help-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
     }
 </style>
 {% endblock %}

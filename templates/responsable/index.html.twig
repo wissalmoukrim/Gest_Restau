@@ -1,376 +1,553 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Dashboard Responsable - Gest Restau{% endblock %}
+{% block title %}🛡️ Dashboard Responsable - La Table Gourmande{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
-
-    <!-- Header Responsable -->
-    <nav class="bg-gray-900 text-white px-6 py-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">👨‍💼</span>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
+    <!-- En-tête Responsable -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl shadow-lg">
+                    <i class="fas fa-user-shield text-white text-2xl"></i>
+                </div>
                 <div>
-                    <h1 class="text-xl font-bold">Espace Responsable</h1>
-                    <p class="text-gray-300 text-sm">Supervision & Résolution de problèmes</p>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">
+                        Bonjour Responsable 
+                        <span class="text-purple-600">{{ app.user.prenom ?? app.user.email|split('@')|first }}</span> !
+                    </h1>
+                    <p class="text-gray-600 mt-2">Gérez les incidents et supervisez les opérations</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <a href="{{ path('dashboard') }}" 
+                   class="inline-flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-700 
+                          hover:from-gray-700 hover:to-gray-800 text-white px-5 py-2.5 
+                          rounded-lg font-bold transition-all hover:shadow-lg hover:-translate-y-0.5">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour au dashboard
+                </a>
+                
+                <a href="{{ path('app_logout') }}" 
+                   class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 
+                          text-white px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-lg 
+                          hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </div>
+
+        <!-- Dashboard Header avec statistiques -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-purple-200 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Card 1: Incidents actifs -->
+                <div class="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-red-500 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-white"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-red-700">
+                            {{ commandesProblemes|length }}
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-red-800 mb-1">Incidents actifs</h3>
+                    <p class="text-red-600 text-sm">À traiter immédiatement</p>
+                </div>
+                
+                <!-- Card 2: Résolus aujourd'hui -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-green-500 rounded-lg">
+                            <i class="fas fa-check-circle text-white"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-green-700">
+                            {{ commandesResolues|default([])|length }}
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-green-800 mb-1">Résolus</h3>
+                    <p class="text-green-600 text-sm">Incidents traités</p>
+                </div>
+                
+                <!-- Card 3: Taux de résolution -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-blue-500 rounded-lg">
+                            <i class="fas fa-chart-line text-white"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-blue-700">
+                            {% set totalIncidents = commandesProblemes|length + commandesResolues|default([])|length %}
+                            {% if totalIncidents > 0 %}
+                                {{ ((commandesResolues|default([])|length / totalIncidents) * 100)|round }}%
+                            {% else %}
+                                100%
+                            {% endif %}
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-blue-800 mb-1">Taux de résolution</h3>
+                    <p class="text-blue-600 text-sm">Efficacité globale</p>
+                </div>
+                
+                <!-- Card 4: Temps moyen -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-purple-500 rounded-lg">
+                            <i class="fas fa-clock text-white"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-purple-700">
+                            {{ tempsMoyenResolu|default('--') }} min
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-purple-800 mb-1">Temps moyen</h3>
+                    <p class="text-purple-600 text-sm">Pour résoudre un incident</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section principale -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Colonne 1: Incidents actifs -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg border border-red-200 overflow-hidden">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-600 to-red-700 p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-white/20 rounded-lg">
+                                <i class="fas fa-exclamation-circle text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">🚨 Incidents Actifs</h2>
+                                <p class="text-red-100">Commandes nécessitant votre attention immédiate</p>
+                            </div>
+                        </div>
+                        <span class="bg-white text-red-700 px-4 py-1 rounded-full font-bold">
+                            {{ commandesProblemes|length }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Contenu -->
+                <div class="p-6">
+                    {% if commandesProblemes|length > 0 %}
+                        <div class="space-y-6">
+                            {% for commande in commandesProblemes %}
+                            <div class="border border-red-200 bg-red-50 rounded-xl p-5 hover:shadow-md transition">
+                                <!-- En-tête de l'incident -->
+                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                    <div>
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                                #{{ commande.id }}
+                                            </span>
+                                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                                                <i class="fas fa-user mr-1"></i>{{ commande.user.email }}
+                                            </span>
+                                        </div>
+                                        <p class="text-gray-600 text-sm">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Créé le {{ commande.date|date('d/m/Y à H:i') }}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="text-right">
+                                        <p class="text-2xl font-bold text-red-700">{{ commande.total }} DH</p>
+                                        <p class="text-gray-500 text-sm">{{ commande.commandeItems|length }} plats</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Informations détaillées -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <p class="font-semibold text-gray-700 mb-1">
+                                            <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
+                                            Adresse de livraison
+                                        </p>
+                                        <p class="text-gray-600">
+                                            {{ commande.adresseLivraison|default('Non spécifiée') }}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <p class="font-semibold text-gray-700 mb-1">
+                                            <i class="fas fa-truck text-blue-500 mr-2"></i>
+                                            Livreur assigné
+                                        </p>
+                                        <p class="text-gray-600">
+                                            {% if commande.livreur %}
+                                                {{ commande.livreur.prenom ?? commande.livreur.email }}
+                                            {% else %}
+                                                Non assigné
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Description de l'incident -->
+                                <div class="mb-5">
+                                    <p class="font-semibold text-red-700 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        Description de l'incident
+                                    </p>
+                                    <div class="bg-white p-4 rounded-lg border border-red-100">
+                                        {{ commande.notes|default('Aucune description fournie')|nl2br }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Formulaire de résolution -->
+                                <form method="POST" action="{{ path('responsable_commande_resoudre', {id: commande.id}) }}" 
+                                      class="bg-white p-4 rounded-lg border border-gray-200">
+                                    <h4 class="font-bold text-green-700 mb-3 flex items-center gap-2">
+                                        <i class="fas fa-wrench"></i>
+                                        Solution à appliquer
+                                    </h4>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 text-sm font-medium mb-2">
+                                            Type de solution
+                                        </label>
+                                        <select name="type_solution" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                            <option value="remboursement">Remboursement partiel</option>
+                                            <option value="remboursement_total">Remboursement total</option>
+                                            <option value="nouvelle_livraison">Nouvelle livraison</option>
+                                            <option value="bon_reduction">Bon de réduction</option>
+                                            <option value="contact_client">Contact avec le client</option>
+                                            <option value="autre">Autre solution</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 text-sm font-medium mb-2">
+                                            Détails de la solution
+                                        </label>
+                                        <textarea name="solution" 
+                                                  rows="3" 
+                                                  placeholder="Décrivez la solution appliquée (remboursement, nouvelle livraison, etc.)" 
+                                                  class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                                  required></textarea>
+                                    </div>
+                                    
+                                    <div class="flex gap-3">
+                                        <button type="submit" 
+                                                class="flex-1 bg-gradient-to-r from-green-600 to-green-700 
+                                                       hover:from-green-700 hover:to-green-800 text-white 
+                                                       px-5 py-3 rounded-lg font-bold transition-all 
+                                                       hover:shadow-lg flex items-center justify-center gap-2">
+                                            <i class="fas fa-check-circle"></i>
+                                            Marquer comme résolu
+                                        </button>
+                                        
+                                        <a href="#" 
+                                           class="inline-flex items-center justify-center gap-2 
+                                                  border-2 border-blue-500 text-blue-600 hover:bg-blue-50 
+                                                  px-5 py-3 rounded-lg font-bold transition">
+                                            <i class="fas fa-phone"></i>
+                                            Contacter
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <!-- Aucun incident -->
+                        <div class="text-center py-12">
+                            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-100 to-green-200 
+                                        rounded-full flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-600 text-4xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-green-700 mb-3">Aucun incident actif !</h3>
+                            <p class="text-gray-600 mb-8">Toutes les commandes se déroulent parfaitement</p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                <button onclick="location.reload()" 
+                                        class="inline-flex items-center gap-2 bg-gradient-to-r 
+                                               from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 
+                                               text-white px-6 py-3 rounded-lg font-bold transition-all hover:shadow-lg">
+                                    <i class="fas fa-redo"></i>
+                                    Actualiser la page
+                                </button>
+                                
+                                <a href="{{ path('dashboard') }}" 
+                                   class="inline-flex items-center gap-2 border-2 
+                                          border-gray-300 text-gray-700 hover:bg-gray-50 
+                                          px-6 py-3 rounded-lg font-bold transition">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    Retour au dashboard
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Colonne 2: Informations et historique -->
+        <div>
+            <!-- Historique des résolutions -->
+            <div class="bg-white rounded-2xl shadow-lg border border-green-200 overflow-hidden mb-8">
+                <div class="bg-gradient-to-r from-green-600 to-green-700 p-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-white/20 rounded-lg">
+                            <i class="fas fa-history text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white">📋 Historique des Résolutions</h2>
+                            <p class="text-green-100 text-sm">Les 5 derniers incidents résolus</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    {% if commandesResolues|default([])|length > 0 %}
+                        <div class="space-y-4">
+                            {% for commande in commandesResolues|slice(0, 5) %}
+                            <div class="border border-green-100 bg-green-50 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-bold text-green-800">#{{ commande.id }}</span>
+                                    <span class="bg-green-600 text-white px-2 py-1 rounded text-xs">
+                                        Résolu
+                                    </span>
+                                </div>
+                                <p class="text-gray-600 text-sm mb-2">
+                                    Client: {{ commande.user.email|slice(0, 15) }}{% if commande.user.email|length > 15 %}...{% endif %}
+                                </p>
+                                <p class="text-gray-500 text-xs">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {{ commande.date|date('d/m H:i') }}
+                                </p>
+                                
+                                <button onclick="toggleDetails({{ loop.index }})" 
+                                        class="text-blue-600 hover:text-blue-800 text-sm mt-2 w-full text-left">
+                                    <i class="fas fa-chevron-down mr-1"></i>
+                                    Voir les détails
+                                </button>
+                                
+                                <div id="details-{{ loop.index }}" class="hidden mt-3 p-3 bg-white rounded border">
+                                    <p class="text-gray-700 text-sm font-medium mb-1">Solution appliquée:</p>
+                                    <p class="text-gray-600 text-sm">{{ commande.notes|default('Non spécifiée')|slice(0, 100) }}{% if commande.notes|default('')|length > 100 %}...{% endif %}</p>
+                                    
+                                    <div class="flex gap-2 mt-3">
+                                        <a href="#" class="text-xs text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-eye"></i> Voir complet
+                                        </a>
+                                        <a href="#" class="text-xs text-green-600 hover:text-green-800">
+                                            <i class="fas fa-redo"></i> Rouvrir
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if commandesResolues|default([])|length > 5 %}
+                            <div class="mt-4 text-center">
+                                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">
+                                    Voir tout l'historique ({{ commandesResolues|default([])|length }})
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-8">
+                            <i class="fas fa-file-alt text-gray-300 text-3xl mb-3"></i>
+                            <p class="text-gray-500">Aucun historique disponible</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actions rapides -->
+            <div class="bg-white rounded-2xl shadow-lg border border-blue-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-white/20 rounded-lg">
+                            <i class="fas fa-bolt text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white">⚡ Actions Rapides</h2>
+                            <p class="text-blue-100 text-sm">Accès direct aux fonctions</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div class="space-y-3">
+                        <a href="#" 
+                           class="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 
+                                  rounded-lg border border-blue-200 transition">
+                            <div class="p-2 bg-blue-500 rounded-lg">
+                                <i class="fas fa-file-pdf text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-blue-800">Générer rapport</p>
+                                <p class="text-blue-600 text-sm">Export PDF des incidents</p>
+                            </div>
+                        </a>
+                        
+                        <a href="#" 
+                           class="flex items-center gap-3 p-4 bg-purple-50 hover:bg-purple-100 
+                                  rounded-lg border border-purple-200 transition">
+                            <div class="p-2 bg-purple-500 rounded-lg">
+                                <i class="fas fa-users text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-purple-800">Contacter équipe</p>
+                                <p class="text-purple-600 text-sm">Livreurs et chefs</p>
+                            </div>
+                        </a>
+                        
+                        <a href="#" 
+                           class="flex items-center gap-3 p-4 bg-green-50 hover:bg-green-100 
+                                  rounded-lg border border-green-200 transition">
+                            <div class="p-2 bg-green-500 rounded-lg">
+                                <i class="fas fa-chart-bar text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-green-800">Statistiques détaillées</p>
+                                <p class="text-green-600 text-sm">Analyses et tendances</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ path('responsable_interfacer') }}" 
+                           class="flex items-center gap-3 p-4 bg-amber-50 hover:bg-amber-100 
+                                  rounded-lg border border-amber-200 transition">
+                            <div class="p-2 bg-amber-500 rounded-lg">
+                                <i class="fas fa-sliders-h text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-amber-800">Interface Responsable</p>
+                                <p class="text-amber-600 text-sm">Paramètres avancés</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pied de page -->
+    <div class="mt-8 pt-6 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="text-sm text-gray-600">Système opérationnel</span>
+                </div>
+                <div class="text-sm text-gray-500">
+                    Dernière mise à jour: {{ "now"|date("d/m/Y H:i") }}
                 </div>
             </div>
             
             <div class="flex items-center gap-4">
-                <div class="bg-gray-800 px-4 py-2 rounded-full">
-                    <span class="font-bold">{{ app.user.nom }} {{ app.user.prenom }}</span>
-                    <span class="text-gray-400 ml-2">Responsable</span>
-                </div>
-                <div class="flex gap-2">
-                    <a href="{{ path('responsable_rapports') }}" 
-                       class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full font-bold transition">
-                        📊 Rapports
-                    </a>
-                    <a href="{{ path('app_logout') }}" 
-                       class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full font-bold transition">
-                        Déconnexion
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mx-auto p-6">
-        <!-- Statistiques urgentes -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-red-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Problèmes</p>
-                        <h3 class="text-3xl font-bold text-red-700">{{ stats.problemes ?? 0 }}</h3>
-                    </div>
-                    <span class="text-3xl text-red-400">⚠️</span>
-                </div>
-                <p class="text-sm text-red-600 mt-2">À résoudre</p>
-            </div>
-            
-            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-yellow-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">En attente</p>
-                        <h3 class="text-3xl font-bold text-yellow-700">{{ stats.en_attente ?? 0 }}</h3>
-                    </div>
-                    <span class="text-3xl text-yellow-400">⏳</span>
-                </div>
-                <p class="text-sm text-yellow-600 mt-2">Commandes non assignées</p>
-            </div>
-            
-            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-blue-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Livreurs</p>
-                        <h3 class="text-3xl font-bold text-blue-700">{{ stats.livreurs_disponibles ?? 0 }}/{{ stats.total_livreurs ?? 0 }}</h3>
-                    </div>
-                    <span class="text-3xl text-blue-400">🚴</span>
-                </div>
-                <p class="text-sm text-blue-600 mt-2">Disponibles</p>
-            </div>
-            
-            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-green-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Chefs</p>
-                        <h3 class="text-3xl font-bold text-green-700">{{ stats.chefs_disponibles ?? 0 }}/{{ stats.total_chefs ?? 0 }}</h3>
-                    </div>
-                    <span class="text-3xl text-green-400">👨‍🍳</span>
-                </div>
-                <p class="text-sm text-green-600 mt-2">En service</p>
-            </div>
-            
-            <div class="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-purple-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Temps moyen</p>
-                        <h3 class="text-3xl font-bold text-purple-700">{{ stats.temps_moyen ?? 0 }}min</h3>
-                    </div>
-                    <span class="text-3xl text-purple-400">⏱️</span>
-                </div>
-                <p class="text-sm text-purple-600 mt-2">Livraison</p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Colonne gauche : Problèmes urgents -->
-            <div class="lg:col-span-2">
-                <!-- Problèmes à résoudre -->
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                    <div class="bg-red-600 text-white p-4">
-                        <h2 class="text-xl font-bold flex items-center gap-2">
-                            <span>⚠️</span> Problèmes urgents
-                        </h2>
-                    </div>
-                    <div class="p-4">
-                        {% if problemes_urgents|length > 0 %}
-                            <div class="space-y-4">
-                                {% for probleme in problemes_urgents %}
-                                <div class="border border-red-200 rounded-xl p-4 bg-red-50">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div>
-                                            <h4 class="font-bold text-red-800 flex items-center gap-2">
-                                                Commande #{{ probleme.commande.id }}
-                                                <span class="bg-red-200 text-red-800 px-2 py-1 rounded text-xs">
-                                                    {{ probleme.type }}
-                                                </span>
-                                            </h4>
-                                            <p class="text-sm text-red-600">{{ probleme.dateSignalement|date('d/m/Y H:i') }}</p>
-                                        </div>
-                                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-bold">
-                                            {{ probleme.priorite }}
-                                        </span>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <p class="text-sm mb-2"><strong>Description:</strong> {{ probleme.description }}</p>
-                                        <div class="flex gap-2 text-sm">
-                                            <span class="bg-gray-200 px-2 py-1 rounded">Client: {{ probleme.commande.user.email }}</span>
-                                            <span class="bg-gray-200 px-2 py-1 rounded">Livreur: {{ probleme.livreur ? probleme.livreur.email : 'Non assigné' }}</span>
-                                            <span class="bg-gray-200 px-2 py-1 rounded">Tél: {{ probleme.commande.user.telephone ?? 'N/A' }}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex gap-2">
-                                        <a href="{{ path('responsable_commande_show', {id: probleme.commande.id}) }}" 
-                                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold text-center transition">
-                                            👁️ Voir commande
-                                        </a>
-                                        <form method="POST" action="{{ path('responsable_resoudre_probleme', {id: probleme.id}) }}" class="flex-1">
-                                            <textarea name="solution" 
-                                                      placeholder="Description de la solution..."
-                                                      class="w-full mb-2 p-2 border rounded-lg text-sm"
-                                                      rows="2"
-                                                      required></textarea>
-                                            <button type="submit" 
-                                                    class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-bold transition">
-                                                ✅ Résoudre
-                                            </button>
-                                        </form>
-                                        <button onclick="appelerClient('{{ probleme.commande.user.telephone }}')"
-                                                class="flex-1 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 rounded-lg font-bold transition">
-                                            📞 Appeler
-                                        </button>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="text-center py-8">
-                                <span class="text-5xl text-green-400 mb-4 block">🎉</span>
-                                <p class="text-gray-600 text-lg">Aucun problème urgent à signaler</p>
-                                <p class="text-gray-500 text-sm">Tout fonctionne normalement</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Commandes en attente d'assignation -->
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="bg-yellow-600 text-white p-4">
-                        <h2 class="text-xl font-bold flex items-center gap-2">
-                            <span>⏳</span> Commandes à assigner
-                        </h2>
-                    </div>
-                    <div class="p-4">
-                        {% if commandes_a_assigner|length > 0 %}
-                            <div class="overflow-x-auto">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="bg-gray-100">
-                                            <th class="p-3 text-left">Commande</th>
-                                            <th class="p-3 text-left">Client</th>
-                                            <th class="p-3 text-left">Montant</th>
-                                            <th class="p-3 text-left">Heure</th>
-                                            <th class="p-3 text-left">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for commande in commandes_a_assigner %}
-                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                            <td class="p-3">
-                                                <strong class="text-blue-700">#{{ commande.id }}</strong>
-                                            </td>
-                                            <td class="p-3">
-                                                <div class="text-sm">{{ commande.user.email }}</div>
-                                                <div class="text-xs text-gray-500">{{ commande.user.telephone ?? 'N/A' }}</div>
-                                            </td>
-                                            <td class="p-3 font-bold">{{ commande.total }} DH</td>
-                                            <td class="p-3">
-                                                <div class="text-sm">{{ commande.date|date('H:i') }}</div>
-                                                <div class="text-xs text-gray-500">{{ commande.date|date('d/m') }}</div>
-                                            </td>
-                                            <td class="p-3">
-                                                <div class="flex gap-2">
-                                                    <button onclick="assignerCommande({{ commande.id }})"
-                                                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-bold">
-                                                        Assigner
-                                                    </button>
-                                                    <a href="{{ path('responsable_commande_show', {id: commande.id}) }}"
-                                                       class="border border-blue-600 text-blue-600 hover:bg-blue-50 px-3 py-1 rounded text-sm font-bold">
-                                                        Détails
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-8">
-                                <span class="text-5xl text-gray-300 mb-4 block">✅</span>
-                                <p class="text-gray-600">Toutes les commandes sont assignées</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Colonne droite : Supervision -->
-            <div>
-                <!-- Équipe en ligne -->
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                    <div class="bg-blue-600 text-white p-4">
-                        <h2 class="text-xl font-bold flex items-center gap-2">
-                            <span>👥</span> Équipe en ligne
-                        </h2>
-                    </div>
-                    <div class="p-4">
-                        <div class="space-y-4">
-                            <!-- Livreurs -->
-                            <div>
-                                <h3 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
-                                    <span class="text-xl">🚴</span> Livreurs
-                                </h3>
-                                {% if livreurs|length > 0 %}
-                                    {% for livreur in livreurs %}
-                                    <div class="flex items-center justify-between mb-2 p-2 hover:bg-gray-50 rounded">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <span class="text-blue-600 font-bold">{{ livreur.prenom|first|upper }}</span>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium">{{ livreur.prenom }} {{ livreur.nom|slice(0, 1) }}.</div>
-                                                <div class="text-xs text-gray-500">{{ livreur.email }}</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-xs font-bold {{ livreur.statut == 'disponible' ? 'text-green-600' : 'text-red-600' }}">
-                                                {{ livreur.statut|capitalize }}
-                                            </div>
-                                            <div class="text-xs text-gray-500">{{ livreur.commandes_en_cours }} livr.</div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <p class="text-gray-500 text-sm text-center py-2">Aucun livreur en ligne</p>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Chefs -->
-                            <div>
-                                <h3 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
-                                    <span class="text-xl">👨‍🍳</span> Chefs
-                                </h3>
-                                {% if chefs|length > 0 %}
-                                    {% for chef in chefs %}
-                                    <div class="flex items-center justify-between mb-2 p-2 hover:bg-gray-50 rounded">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                                <span class="text-green-600 font-bold">{{ chef.prenom|first|upper }}</span>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium">{{ chef.prenom }} {{ chef.nom|slice(0, 1) }}.</div>
-                                                <div class="text-xs text-gray-500">{{ chef.email }}</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-xs font-bold {{ chef.statut == 'actif' ? 'text-green-600' : 'text-red-600' }}">
-                                                {{ chef.statut|capitalize }}
-                                            </div>
-                                            <div class="text-xs text-gray-500">{{ chef.commandes_en_preparation }} plat(s)</div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <p class="text-gray-500 text-sm text-center py-2">Aucun chef en ligne</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Alertes système -->
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                    <div class="bg-gray-800 text-white p-4">
-                        <h2 class="text-xl font-bold flex items-center gap-2">
-                            <span>🔔</span> Alertes système
-                        </h2>
-                    </div>
-                    <div class="p-4">
-                        <div class="space-y-3">
-                            {% if alertes|length > 0 %}
-                                {% for alerte in alertes %}
-                                <div class="border-l-4 {{ 
-                                    alerte.niveau == 'critique' ? 'border-red-500 bg-red-50' :
-                                    alerte.niveau == 'warning' ? 'border-yellow-500 bg-yellow-50' :
-                                    'border-blue-500 bg-blue-50'
-                                }} p-3 rounded-r">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <p class="font-bold {{ 
-                                                alerte.niveau == 'critique' ? 'text-red-700' :
-                                                alerte.niveau == 'warning' ? 'text-yellow-700' :
-                                                'text-blue-700'
-                                            }}">{{ alerte.titre }}</p>
-                                            <p class="text-sm text-gray-600">{{ alerte.message }}</p>
-                                        </div>
-                                        <span class="text-xs text-gray-500">{{ alerte.date|date('H:i') }}</span>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="text-center py-4">
-                                    <span class="text-3xl text-green-400 mb-2 block">✅</span>
-                                    <p class="text-gray-600 text-sm">Aucune alerte système</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions rapides -->
-                <div class="space-y-3">
-                    <a href="{{ path('responsable_commandes') }}" 
-                       class="block w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl font-bold text-center transition">
-                        📋 Voir toutes les commandes
-                    </a>
-                    <a href="{{ path('responsable_rapports') }}" 
-                       class="block w-full bg-green-600 hover:bg-green-700 text-white p-4 rounded-xl font-bold text-center transition">
-                        📊 Générer un rapport
-                    </a>
-                    <a href="{{ path('responsable_statistiques') }}" 
-                       class="block w-full bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-xl font-bold text-center transition">
-                        📈 Statistiques détaillées
-                    </a>
-                    <button onclick="rafraichirDonnees()"
-                            class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-xl font-bold text-center transition">
-                        🔄 Actualiser les données
-                    </button>
-                </div>
+                <a href="#" class="text-gray-600 hover:text-gray-800 text-sm">
+                    <i class="fas fa-question-circle mr-1"></i>
+                    Aide
+                </a>
+                <a href="#" class="text-gray-600 hover:text-gray-800 text-sm">
+                    <i class="fas fa-cog mr-1"></i>
+                    Paramètres
+                </a>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Scripts -->
 <script>
-function appelerClient(telephone) {
-    if (telephone && telephone !== 'N/A') {
-        if (confirm('Appeler le client au ' + telephone + ' ?')) {
-            window.location.href = 'tel:' + telephone;
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes
+    const cards = document.querySelectorAll('.bg-white');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+    
+    // Auto-refresh toutes les 60 secondes
+    setTimeout(() => {
+        location.reload();
+    }, 60000);
+});
+
+function toggleDetails(id) {
+    const element = document.getElementById('details-' + id);
+    const button = element.previousElementSibling;
+    const icon = button.querySelector('i');
+    
+    element.classList.toggle('hidden');
+    
+    if (element.classList.contains('hidden')) {
+        icon.className = 'fas fa-chevron-down mr-1';
     } else {
-        alert('Numéro
+        icon.className = 'fas fa-chevron-up mr-1';
+    }
+}
+
+// Confirmation avant résolution
+document.addEventListener('submit', function(e) {
+    if (e.target.matches('form[action*="resoudre"]')) {
+        if (!confirm('Êtes-vous sûr de vouloir marquer cet incident comme résolu ?')) {
+            e.preventDefault();
+        }
+    }
+});
+</script>
+
+<!-- Styles supplémentaires -->
+<style>
+    /* Animations */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    /* Scrollbar personnalisée */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    /* Transition douce pour les détails */
+    [id^="details-"] {
+        transition: all 0.3s ease;
+    }
+    
+    /* Effet de survol amélioré */
+    .hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .grid-cols-1 {
+            grid-template-columns: 1fr;
+        }
+        
+        .lg\\:col-span-2 {
+            grid-column: span 1;
+        }
+    }
+</style>
+{% endblock %}

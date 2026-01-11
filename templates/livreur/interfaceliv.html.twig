@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Livreur{% endblock %}
+
+{% block body %}
+<h1>Bienvenue, {{ app.user.nom }}</h1>
+
+<h2>Commandes prêtes ou en livraison</h2>
+{% if commandes is not empty %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Total</th>
+                <th>Adresse</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for commande in commandes %}
+                <tr>
+                    <td>{{ commande.id }}</td>
+                    <td>{{ commande.user.email }}</td>
+                    <td>{{ commande.total }} MAD</td>
+                    <td>{{ commande.adresseLivraison }}</td>
+                    <td>{{ commande.statut }}</td>
+                    <td>{{ commande.date|date('d/m/Y H:i') }}</td>
+                    <td>
+                        <form method="post" action="{{ path('livreur_commande_livrer', {'id': commande.id}) }}">
+                            <button type="submit">
+                                {% if commande.statut == 'prete' %}Mettre en livraison{% else %}Terminer{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Aucune commande à livrer.</p>
+{% endif %}
+
+{% endblock %}

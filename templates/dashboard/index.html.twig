@@ -3,190 +3,895 @@
 {% block title %}Dashboard - Gest Restau{% endblock %}
 
 {% block body %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4 md:p-6">
+    
+    <!-- Section Bienvenue -->
+    {% if app.user %}
+    <div class="mb-8">
+        <div class="bg-gradient-to-r from-amber-900/50 to-amber-800/30 border border-amber-700 rounded-2xl p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-amber-600 to-amber-800 rounded-2xl 
+                                flex items-center justify-center shadow-lg">
+                        <span class="text-2xl text-amber-100">👋</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-amber-100">Bienvenue, {{ app.user.prenom }} !</h1>
+                        <p class="text-amber-300">{{ app.user.email }}</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <span class="px-3 py-1 bg-amber-900/50 text-amber-300 rounded-full text-sm">
+                                <i class="fas fa-user-tag mr-1"></i>
+                                {% if 'ROLE_ADMIN' in app.user.roles %}
+                                    Administrateur
+                                {% elseif 'ROLE_CHEF' in app.user.roles %}
+                                    Chef Cuisinier
+                                {% elseif 'ROLE_RECEPTIONNISTE' in app.user.roles %}
+                                    Réceptionniste
+                                {% else %}
+                                    Client
+                                {% endif %}
+                            </span>
+                            <span class="text-amber-400 text-sm">
+                                <i class="fas fa-clock mr-1"></i>
+                                {{ "now"|date("d/m/Y") }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-{# ================= ZONE BIENVENUE (SEULEMENT SI CONNECTÉ) ================= #}
-{% if app.user %}
-    <div class="bg-black border border-amber-600 rounded-2xl p-6 mb-8 flex justify-between items-center">
-        <div class="text-amber-200">
-            <div class="flex items-center gap-3 mb-2">
-                <span class="text-3xl text-amber-400">👋</span>
-                <div>
-                    <p class="text-xl font-bold text-amber-300">Bienvenue {{ app.user.nom }} !</p>
-                    <p class="text-amber-400">{{ app.user.email }}</p>
+                <div class="flex flex-wrap gap-3">
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('admin_dashboard') }}" 
+                           class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 
+                                  hover:from-amber-700 hover:to-amber-800 text-black px-5 py-2.5 
+                                  rounded-xl font-bold transition-all hover:shadow-lg hover:-translate-y-0.5">
+                            <i class="fas fa-cog"></i>
+                            Espace Admin
+                        </a>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_CHEF') and not is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('chef_dashboard') }}" 
+                           class="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-700 
+                                  hover:from-orange-700 hover:to-orange-800 text-white px-5 py-2.5 
+                                  rounded-xl font-bold transition-all hover:shadow-lg hover:-translate-y-0.5">
+                            <i class="fas fa-chef-hat"></i>
+                            Interface Chef
+                        </a>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE') %}
+                        <a href="{{ path('client_dashboard') }}" 
+                           class="inline-flex items-center gap-2 border-2 border-amber-500 text-amber-400 
+                                  hover:bg-amber-500 hover:text-black px-5 py-2.5 rounded-xl 
+                                  font-bold transition-all hover:shadow-lg">
+                            <i class="fas fa-user-circle"></i>
+                            Mon Espace
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
+    </div>
+    {% endif %}
 
-        <div class="flex gap-3">
-            {# ADMIN → ESPACE ADMIN #}
-            {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('admin_dashboard') }}" class="bg-amber-600 hover:bg-amber-700 text-black px-5 py-3 rounded-xl font-bold transition flex items-center gap-2">
-                    <span class="text-xl">⚙️</span>
-                    Espace Admin
-                </a>
-            {% endif %}
+    <!-- Statistiques de consommation (si admin) -->
+    {% if is_granted('ROLE_ADMIN') %}
+    <div class="mb-8">
+        <div class="bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6">
+            <h2 class="text-2xl font-bold text-amber-300 mb-6 flex items-center gap-3">
+                <i class="fas fa-chart-line"></i>
+                📊 Statistiques de consommation
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Plat le plus populaire -->
+                <div class="bg-gradient-to-br from-amber-900/50 to-amber-800/30 border border-amber-700 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-amber-600 rounded-lg">
+                            <i class="fas fa-crown text-amber-100"></i>
+                        </div>
+                    <span class="text-2xl font-bold text-amber-300">
+                        {% if platPlusVendu %}
+                            {{ platPlusVendu.quantiteVendue }}  {# ← CHANGEZ ICI #}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </span>
+                    </div>
+                    <h3 class="font-bold text-amber-100 mb-1">Plat le plus vendu</h3>
+                    <p class="text-amber-400 text-sm">
+                        {% if platPlusVendu %}
+                            {{ platPlusVendu.nom|slice(0, 20) }}{% if platPlusVendu.nom|length > 20 %}...{% endif %}
+                        {% else %}
+                            Aucune donnée
+                        {% endif %}
+                    </p>
+                </div>
 
-            {# CLIENT → ESPACE CLIENT #}
-            {% if is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')  %}
-                <a href="{{ path('client_dashboard') }}" class="border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-5 py-3 rounded-xl font-bold transition flex items-center gap-2">
-                    <span class="text-xl">👤</span>
-                    Mon espace
-                </a>
+                <!-- Revenu total -->
+                <div class="bg-gradient-to-br from-green-900/50 to-green-800/30 border border-green-700 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-green-600 rounded-lg">
+                            <i class="fas fa-coins text-green-100"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-green-300">
+                            {{ revenuTotal|default(0)|number_format(2, ',', ' ') }} DH
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-green-100 mb-1">Revenu total</h3>
+                    <p class="text-green-400 text-sm">Toutes les commandes</p>
+                </div>
+
+                <!-- Commandes aujourd'hui -->
+                <div class="bg-gradient-to-br from-blue-900/50 to-blue-800/30 border border-blue-700 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-blue-600 rounded-lg">
+                            <i class="fas fa-shopping-bag text-blue-100"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-blue-300">{{ commandesAujourdhui|default(0) }}</span>
+                    </div>
+                    <h3 class="font-bold text-blue-100 mb-1">Commandes aujourd'hui</h3>
+                    <p class="text-blue-400 text-sm">{{ "now"|date("d/m/Y") }}</p>
+                </div>
+
+                <!-- Taux de satisfaction -->
+                <div class="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border border-purple-700 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="p-2 bg-purple-600 rounded-lg">
+                            <i class="fas fa-star text-purple-100"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-purple-300">94%</span>
+                    </div>
+                    <h3 class="font-bold text-purple-100 mb-1">Satisfaction clients</h3>
+                    <p class="text-purple-400 text-sm">Moyenne 4.7/5</p>
+                </div>
+            </div>
+
+            <!-- Section Graphiques -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Graphique 1: Top 5 plats -->
+                <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                    <h3 class="text-lg font-bold text-amber-200 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar"></i>
+                        Top 5 des plats les plus vendus
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="topPlatsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Graphique 2: Répartition des ventes -->
+                <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-5">
+                    <h3 class="text-lg font-bold text-amber-200 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-pie"></i>
+                        Répartition des ventes
+                    </h3>
+                    <div class="h-64">
+                        <canvas id="ventesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphique 3: Évolution des ventes (pleine largeur) -->
+            <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-5 mb-6">
+                <h3 class="text-lg font-bold text-amber-200 mb-4 flex items-center gap-2">
+                    <i class="fas fa-chart-line"></i>
+                    Évolution des ventes sur 7 jours
+                </h3>
+                <div class="h-72">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top 3 plats les plus consommés -->
+            {% if platsStats|length > 0 %}
+            <div class="mt-6">
+                <h3 class="text-xl font-bold text-amber-200 mb-4 flex items-center gap-2">
+                    <i class="fas fa-fire"></i>
+                    Top 3 plats les plus consommés
+                </h3>
+                
+                <div class="space-y-4">
+                    {% for stat in platsStats|slice(0, 3) %}
+                    <div class="flex items-center p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+                        <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br 
+                                    {% if loop.first %}from-amber-600 to-amber-800
+                                    {% elseif loop.index == 2 %}from-gray-600 to-gray-800
+                                    {% else %}from-amber-900 to-amber-950{% endif %} 
+                                    rounded-xl flex items-center justify-center mr-4">
+                            <span class="text-lg font-bold text-white">{{ loop.index }}</span>
+                        </div>
+                        
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-bold text-gray-100">{{ stat.nom }}</h4>
+                                <span class="font-bold text-amber-300">{{ stat.quantiteVendue }} ventes</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="h-2 rounded-full 
+                                    {% if loop.first %}bg-amber-500
+                                    {% elseif loop.index == 2 %}bg-blue-500
+                                    {% else %}bg-green-500{% endif %}" 
+                                    style="width: {{ (stat.quantiteVendue / max(platsStats|first.quantiteVendue, 1)) * 100 }}%">
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-400 mt-1">
+                                <span>Revenu: {{ stat.revenu|default(0)|number_format(2, ',', ' ') }} DH</span>
+                                <span>{{ (stat.quantiteVendue / totalVentes * 100)|round(1) }}% des ventes</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
             {% endif %}
         </div>
     </div>
-{% endif %}
+    {% endif %}
+    {% if not is_granted('ROLE_ADMIN') %}
 
-{# CLIENT → ESPACE Chef #}
-            {% if is_granted('ROLE_CHEF') and not is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('chef_interface') }}" class="border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-5 py-3 rounded-xl font-bold transition flex items-center gap-2">
-                    <span class="text-xl">👤</span>
-                    Mon espace
-                </a>
-            {% endif %}
-{# ================= FIN ZONE BIENVENUE ================= #}
-{% if app.user and is_granted('ROLE_ADMIN') %}
-<div class="bg-black border border-amber-600 rounded-2xl p-4 mb-6 flex gap-3">
-    <a href="{{ path('admin_employee_index') }}" class="bg-amber-600 hover:bg-amber-700 text-black px-4 py-2 rounded-xl font-bold transition">
-        👥 Gérer les employés
-    </a>
-    <a href="{{ path('admin_employee_new') }}" class="bg-green-600 hover:bg-green-700 text-black px-4 py-2 rounded-xl font-bold transition">
-        ➕ Ajouter un employé
-    </a>
-</div>
-{% endif %}
+    <!-- Titre et bouton ajouter -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-amber-100 mb-2">🍽️ Notre Carte Gastronomique</h2>
+            <p class="text-amber-400">Découvrez nos spécialités préparées avec passion</p>
+        </div>
 
-
-{# ================= TITRE + AJOUTER PLAT (ADMIN SEULEMENT) ================= #}
-<div class="flex justify-between items-center mb-8">
-    <div>
-        <h2 class="text-3xl font-bold text-amber-300">🍽️ Notre Carte</h2>
-        <p class="text-amber-500">Découvrez nos spécialités maison</p>
+        {% if is_granted('ROLE_ADMIN') %}
+        <div class="flex gap-3">
+            <a href="{{ path('app_admin_plat') }}" 
+               class="inline-flex items-center gap-2 border-2 border-amber-500 text-amber-400 
+                      hover:bg-amber-500 hover:text-black px-5 py-2.5 rounded-xl font-bold transition">
+                <i class="fas fa-list"></i>
+                Gérer les plats
+            </a>
+            <a href="{{ path('app_admin_plat_new') }}" 
+               class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 
+                      hover:from-amber-700 hover:to-amber-800 text-black px-5 py-2.5 
+                      rounded-xl font-bold transition-all hover:shadow-lg hover:-translate-y-0.5">
+                <i class="fas fa-plus-circle"></i>
+                Ajouter un plat
+            </a>
+        </div>
+        {% endif %}
     </div>
 
-    {% if is_granted('ROLE_ADMIN') %}
-        <a href="{{ path('app_admin_plat_new') }}" class="bg-amber-600 hover:bg-amber-700 text-black px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
-            <span class="text-xl">+</span>
-            Ajouter un plat
-        </a>
-    {% endif %}
-</div>
-
-{# ================= LISTE DES PLATS ================= #}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for plat in plats %}
-        <div class="bg-black border border-amber-800 rounded-2xl overflow-hidden hover:border-amber-600 transition-all duration-300 relative">
+    <!-- Liste des plats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for plat in plats %}
+        <div class="group bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 
+                    rounded-2xl overflow-hidden hover:border-amber-500 transition-all duration-300 
+                    hover:shadow-2xl hover:-translate-y-2 relative flex flex-col h-full">
             
-            {% if loop.first %}
-                <div class="absolute top-4 right-4 bg-amber-600 text-black px-3 py-1 rounded-full text-xs font-bold z-10">
-                    ★ Spécialité
-                </div>
+            <!-- Badge populaire (si plat dans le top 3) -->
+            {% set platTop = false %}
+            {% if platsStats is defined %}
+                {% for stat in platsStats|slice(0, 3) %}
+                    {% if stat.id == plat.id %}
+                        {% set platTop = true %}
+                        <div class="absolute top-4 left-4 z-10">
+                            <span class="inline-flex items-center gap-1 bg-gradient-to-r 
+                                        {% if loop.first %}from-amber-600 to-amber-800
+                                        {% elseif loop.index == 2 %}from-gray-600 to-gray-800
+                                        {% else %}from-amber-900 to-amber-950{% endif %} 
+                                        text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                                <i class="fas fa-fire text-xs"></i>
+                                Top {{ loop.index }}
+                            </span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
             
-            {% if plat.image %}
-                <div class="h-48 overflow-hidden">
-                    <img src="{{ asset('uploads/' ~ plat.image) }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="{{ plat.nom }}">
-                </div>
-            {% else %}
-                <div class="h-48 bg-gradient-to-br from-amber-900 to-black flex items-center justify-center">
-                    <span class="text-5xl text-amber-600">🍛</span>
+            <!-- Badge spécialité -->
+            {% if loop.first and not platTop %}
+                <div class="absolute top-4 right-4 z-10">
+                    <span class="bg-gradient-to-r from-amber-600 to-amber-800 text-white 
+                                px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                        <i class="fas fa-star mr-1"></i>
+                        Spécialité
+                    </span>
                 </div>
             {% endif %}
 
-            <div class="p-5">
+            <!-- Image -->
+            <div class="relative h-40 overflow-hidden">
+                {% if plat.image %}
+                    <img src="{{ asset('uploads/' ~ plat.image) }}" 
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                         alt="{{ plat.nom }}"
+                         style="max-height: 160px; min-height: 160px;">
+                {% else %}
+                    <div class="w-full h-full bg-gradient-to-br from-amber-900 to-black 
+                                flex items-center justify-center"
+                         style="min-height: 160px;">
+                        <i class="fas fa-utensils text-amber-600 text-4xl"></i>
+                    </div>
+                {% endif %}
+                
+                <!-- Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 
+                            group-hover:opacity-100 transition-opacity duration-300">
+                </div>
+            </div>
+
+            <!-- Contenu -->
+            <div class="p-5 flex-1 flex flex-col">
+                <!-- En-tête -->
                 <div class="flex justify-between items-start mb-3">
-                    <h5 class="text-xl font-bold text-amber-200">{{ plat.nom }}</h5>
-                    <span class="bg-amber-900 text-amber-300 px-3 py-1 rounded-full text-sm font-bold">
+                    <h5 class="text-xl font-bold text-gray-100 group-hover:text-amber-100 transition">
+                        {{ plat.nom }}
+                    </h5>
+                    <span class="bg-amber-900/50 text-amber-300 px-3 py-1 rounded-full text-sm font-bold">
                         {{ plat.categorie ?? 'Plat' }}
                     </span>
                 </div>
                 
-                <p class="text-amber-500 mb-4 line-clamp-2">
-                    {{ plat.description ?? 'Délicieux plat préparé avec soin par nos chefs.' }}
+                <!-- Description -->
+                <p class="text-gray-400 mb-4 line-clamp-2 text-sm flex-1">
+                    {{ plat.description|default('Délicieux plat préparé avec soin par nos chefs') }}
                 </p>
                 
+                <!-- Prix et disponibilité -->
                 <div class="flex justify-between items-center mb-4">
-                    <span class="text-2xl font-bold text-amber-300">{{ plat.prix }} DH</span>
-                </div>
-            </div>
-
-            <div class="px-5 pb-5 flex flex-wrap gap-2">
-                {# 👁️ Détails pour tous #}
-                <a href="{{ path('plat_details', {id: plat.id}) }}" class="flex-1 bg-amber-600 hover:bg-amber-700 text-black px-4 py-2 rounded-lg font-bold text-center">
-                    👁️ Détails
-                </a>
-
-                {# 🛒 Ajouter au panier #}
-                {% if app.user and is_granted('ROLE_USER') or  is_granted('ROLE_RECEPTIONNISTE') %}
-                    <button onclick="addToCart({{ plat.id }})" class="flex-1 border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-4 py-2 rounded-lg font-bold text-center">
-                        🛒 Ajouter au panier
-                    </button>
-                {% else %}
-                    <a href="{{ path('app_register') }}" class="flex-1 border-2 border-amber-500 text-amber-400 hover:bg-amber-500 hover:text-black px-4 py-2 rounded-lg font-bold text-center">
-                        🛒 Ajouter au panier
-                    </a>
-                {% endif %}
-
-                {# ADMIN BOUTONS #}
-                {% if is_granted('ROLE_ADMIN') %}
-                    <div class="w-full flex gap-2 mt-2">
-                        <a href="{{ path('app_admin_plat_edit', {id: plat.id}) }}" class="flex-1 border border-amber-600 text-amber-400 hover:bg-amber-900 px-3 py-2 rounded-lg text-sm text-center">
-                            ✏️ Modifier
-                        </a>
-                        <form method="post" action="{{ path('app_admin_plat_delete', {id: plat.id}) }}" class="flex-1" onsubmit="return confirm('Voulez-vous vraiment supprimer ce plat ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_plat_' ~ plat.id) }}">
-                            <button class="w-full border border-amber-800 text-amber-500 hover:bg-amber-900 px-3 py-2 rounded-lg text-sm font-bold">
-                                🗑️ Supprimer
-                            </button>
-                        </form>
+                    <div>
+                        <span class="text-2xl font-bold text-amber-300">{{ plat.prix }} DH</span>
+                        {% if platsStats is defined %}
+                            {% for stat in platsStats %}
+                                {% if stat.id == plat.id %}
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <i class="fas fa-chart-line mr-1"></i>
+                                        {{ stat.quantiteVendue|default(0) }} ventes
+                                    </p>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                     </div>
-                {% endif %}
-            </div>
-        </div>
-    {% endfor %}
-</div>
 
-{# ================= PANIER FLOTTANT ================= #}
-{% if app.user and is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')  %}
-<a href="{{ path('client_panier') }}" class="fixed bottom-6 right-6 bg-amber-600 text-black px-5 py-3 rounded-full shadow-lg hover:bg-amber-700 transition flex items-center gap-2 z-50">
-    <span class="text-xl">🛒</span>
-    <span class="font-bold">Voir mon panier</span>
-</a>
+                    
+                    <div class="flex items-center">
+                        {% if plat.disponible %}
+                            <span class="flex items-center gap-1 text-green-400 text-sm">
+                                <i class="fas fa-check-circle"></i>
+                                Disponible
+                            </span>
+                        {% else %}
+                            <span class="flex items-center gap-1 text-red-400 text-sm">
+                                <i class="fas fa-times-circle"></i>
+                                Épuisé
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col gap-3">
+                    <!-- Détails -->
+                    <a href="{{ path('plat_details', {id: plat.id}) }}" 
+                       class="inline-flex items-center justify-center gap-2 bg-gradient-to-r 
+                              from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 
+                              text-gray-100 px-4 py-2.5 rounded-lg font-bold transition-all">
+                        <i class="fas fa-eye"></i>
+                        Voir les détails
+                    </a>
+
+                    <!-- Ajouter au panier -->
+                    <div class="grid grid-cols-2 gap-2">
+{% if app.user and (is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')) %}
+
+    {% if plat.disponible %}
+        <button onclick="addToCart({{ plat.id }})" 
+                class="inline-flex items-center justify-center gap-2 
+                       bg-gradient-to-r from-amber-600 to-amber-700 
+                       hover:from-amber-700 hover:to-amber-800 text-black 
+                       px-3 py-2.5 rounded-lg font-bold transition-all 
+                       hover:shadow-lg hover:-translate-y-0.5">
+            <i class="fas fa-cart-plus"></i>
+            Ajouter
+        </button>
+    {% else %}
+        <button disabled
+                class="inline-flex items-center justify-center gap-2 
+                       bg-gray-700 text-gray-400 px-3 py-2.5 
+                       rounded-lg font-bold cursor-not-allowed">
+            <i class="fas fa-ban"></i>
+            Indisponible
+        </button>
+    {% endif %}
+
+{% else %}
+
+    <a href="{{ path('app_register') }}" 
+       class="inline-flex items-center justify-center gap-2 
+              border-2 border-amber-500 text-amber-400 
+              hover:bg-amber-500 hover:text-black px-3 py-2.5 
+              rounded-lg font-bold transition text-center">
+        <i class="fas fa-cart-plus"></i>
+        Ajouter
+    </a>
+
 {% endif %}
 
-{# ================= SCRIPT AJAX ================= #}
-{% if app.user and is_granted('ROLE_USER') or  is_granted('ROLE_RECEPTIONNISTE') %}
+
+                        <!-- Quantité si connecté -->
+                        {% if app.user and (is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')) %}
+                            <button onclick="addToCart({{ plat.id }}, 2)" 
+                                    class="inline-flex items-center justify-center gap-2 
+                                           border-2 border-amber-500 text-amber-400 
+                                           hover:bg-amber-500 hover:text-black px-3 py-2.5 
+                                           rounded-lg font-bold transition">
+                                <i class="fas fa-plus"></i>
+                                ×2
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions admin -->
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <div class="flex gap-2 pt-3 border-t border-gray-700">
+                            <a href="{{ path('app_admin_plat_edit', {id: plat.id}) }}" 
+                               class="flex-1 inline-flex items-center justify-center gap-1 
+                                      border border-amber-600 text-amber-400 hover:bg-amber-900 
+                                      px-3 py-2 rounded-lg text-sm transition">
+                                <i class="fas fa-edit"></i>
+                                Modifier
+                            </a>
+                            <form method="post" 
+                                  action="{{ path('app_admin_plat_delete', {id: plat.id}) }}" 
+                                  onsubmit="return confirm('Supprimer définitivement ce plat ?');"
+                                  class="flex-1">
+                                <input type="hidden" name="_token" 
+                                       value="{{ csrf_token('delete_plat_' ~ plat.id) }}">
+                                <button type="submit" 
+                                        class="w-full inline-flex items-center justify-center gap-1 
+                                               border border-red-600 text-red-400 hover:bg-red-900 
+                                               px-3 py-2 rounded-lg text-sm transition">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+            <!-- Aucun plat -->
+            <div class="col-span-full bg-gradient-to-br from-gray-800 to-gray-900 
+                        border border-gray-700 rounded-2xl p-12 text-center">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-amber-700 to-amber-900 
+                            rounded-full flex items-center justify-center">
+                    <i class="fas fa-utensils text-amber-200 text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-amber-100 mb-3">Aucun plat disponible</h3>
+                <p class="text-amber-400 mb-8">Notre menu est en cours de préparation</p>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_plat_new') }}" 
+                       class="inline-flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 
+                              hover:from-amber-700 hover:to-amber-800 text-black px-8 py-3 
+                              rounded-xl font-bold text-lg transition-all hover:shadow-xl">
+                        <i class="fas fa-plus-circle"></i>
+                        Ajouter le premier plat
+                    </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+        {# PAGINATION - AJOUTEZ ICI #}
+    {% if plats.pageCount > 1 %}
+    <div class="mt-12 flex justify-center items-center gap-6">
+        {% if plats.currentPageNumber > 1 %}
+        <a href="{{ path('dashboard', {page: plats.currentPageNumber - 1}) }}" 
+           class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-800 to-gray-900 
+                  hover:from-amber-900 hover:to-amber-950 text-gray-300 hover:text-white 
+                  rounded-xl font-bold transition-all border border-gray-700 hover:border-amber-600">
+            <i class="fas fa-chevron-left"></i>
+            Précédent
+        </a>
+        {% else %}
+        <span class="flex items-center gap-2 px-6 py-3 bg-gray-900/50 text-gray-600 
+                    rounded-xl font-bold border border-gray-800 cursor-not-allowed">
+            <i class="fas fa-chevron-left"></i>
+            Précédent
+        </span>
+        {% endif %}
+
+        <div class="flex items-center gap-2">
+            {% for page in 1..plats.pageCount %}
+                {% if page == plats.currentPageNumber %}
+                    <span class="w-10 h-10 flex items-center justify-center bg-gradient-to-r 
+                                from-amber-600 to-amber-700 text-black font-bold rounded-lg">
+                        {{ page }}
+                    </span>
+                {% elseif page <= 3 or page >= plats.pageCount - 2 or 
+                        (page >= plats.currentPageNumber - 1 and page <= plats.currentPageNumber + 1) %}
+                    <a href="{{ path('dashboard', {page: page}) }}" 
+                       class="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 
+                              text-gray-300 rounded-lg transition">
+                        {{ page }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if plats.pageCount > 6 and plats.currentPageNumber < plats.pageCount - 3 %}
+                <span class="text-gray-500">...</span>
+            {% endif %}
+        </div>
+
+        {% if plats.currentPageNumber < plats.pageCount %}
+        <a href="{{ path('dashboard', {page: plats.currentPageNumber + 1}) }}" 
+           class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-800 to-gray-900 
+                  hover:from-amber-900 hover:to-amber-950 text-gray-300 hover:text-white 
+                  rounded-xl font-bold transition-all border border-gray-700 hover:border-amber-600">
+            Suivant
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% else %}
+        <span class="flex items-center gap-2 px-6 py-3 bg-gray-900/50 text-gray-600 
+                    rounded-xl font-bold border border-gray-800 cursor-not-allowed">
+            Suivant
+            <i class="fas fa-chevron-right"></i>
+        </span>
+        {% endif %}
+    </div>
+    {% endif %}
+    {# FIN PAGINATION #}
+    {% endif %}
+
+
+    <!-- Dans la section des boutons par rôle -->
+{% if is_granted('ROLE_RESPONSABLE') %}
+    <a href="{{ path('responsable_index') }}" 
+       class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-700 
+              hover:from-purple-700 hover:to-purple-800 text-white px-5 py-2.5 
+              rounded-xl font-bold transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <i class="fas fa-user-shield"></i>
+        Gestion des incidents
+    </a>
+{% endif %}
+
+<!-- Bouton panier flottant -->
+{% if app.user and (is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')) %}
+<a href="{{ path('client_panier') }}" 
+   class="fixed bottom-6 right-6 bg-gradient-to-r from-amber-500 to-yellow-500 
+          hover:from-amber-600 hover:to-yellow-600 text-black px-4 py-3 
+          rounded-full shadow-xl hover:shadow-2xl shadow-amber-500/30
+          transition-all duration-300 hover:scale-105 z-50 
+          flex items-center gap-2 group">
+    <div class="relative">
+        <i class="fas fa-shopping-cart text-lg"></i>
+        {% set panier = app.user.paniers.first %}
+        {% if panier and panier.panierItems|length > 0 %}
+            <span class="absolute -top-2 -right-2 bg-black text-white text-xs 
+                         w-5 h-5 rounded-full flex items-center justify-center 
+                         font-bold border border-amber-300">
+                {{ panier.panierItems|length }}
+            </span>
+        {% endif %}
+    </div>
+    <span class="font-bold whitespace-nowrap hidden sm:inline-block text-sm">
+        Mon panier
+    </span>
+    <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform hidden sm:inline-block"></i>
+</a>
+{% endif %}
+</div>
+
+<!-- Scripts -->
+{% if app.user and (is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')) %}
 <script>
-function addToCart(platId) {
+function addToCart(platId, quantity = 1) {
     fetch('/client/panier/add/' + platId, {
         method: 'POST',
-        headers: {'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest'}
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ quantity: quantity })
     })
     .then(res => res.json())
     .then(data => {
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-fadeIn';
-        notification.innerHTML = `
-            <div class="flex items-center gap-3">
-                <span class="text-xl">✅</span>
-                <div>
-                    <p class="font-bold">Ajouté au panier !</p>
-                    <p class="text-sm">Le plat a été ajouté à votre panier</p>
-                </div>
-            </div>`;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
+        showNotification('✅ Ajouté au panier', 'Le plat a été ajouté avec succès', 'success');
+        updateCartBadge();
     })
-    .catch(err => { console.error(err); alert('Erreur panier'); });
+    .catch(err => {
+        console.error(err);
+        showNotification('❌ Erreur', 'Impossible d\'ajouter au panier', 'error');
+    });
 }
 
-// Animation notification
-const style = document.createElement('style');
-style.textContent = `
-@keyframes fadeIn { from {opacity:0;transform:translateY(-20px);} to {opacity:1;transform:translateY(0);} }
-.animate-fadeIn { animation: fadeIn 0.3s ease-out; }`;
-document.head.appendChild(style);
+function showNotification(title, message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} 
+                             text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-notification 
+                             max-w-sm`;
+    notification.innerHTML = `
+        <div class="flex items-start gap-3">
+            <div class="text-xl">${type === 'success' ? '✅' : '❌'}</div>
+            <div>
+                <p class="font-bold">${title}</p>
+                <p class="text-sm opacity-90">${message}</p>
+            </div>
+        </div>`;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+function updateCartBadge() {
+    // Mettre à jour le badge du panier
+    fetch('/client/panier/count')
+        .then(res => res.json())
+        .then(data => {
+            const badge = document.querySelector('.fixed .bg-red-500');
+            if (badge) {
+                badge.textContent = data.count;
+            }
+        });
+}
 </script>
 {% endif %}
 
+<!-- Inclure Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Scripts pour les graphiques -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation au scroll
+    const cards = document.querySelectorAll('.group');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+
+    // Créer les graphiques si admin
+    {% if is_granted('ROLE_ADMIN') and platsStats|length > 0 %}
+        createCharts();
+    {% endif %}
+});
+
+// Fonction pour créer les graphiques
+function createCharts() {
+    // Données des plats
+    const platsData = [
+        {% for stat in platsStats|slice(0, 5) %}
+        {
+            nom: '{{ stat.nom|slice(0, 15) }}{% if stat.nom|length > 15 %}...{% endif %}',
+            ventes: {{ stat.quantiteVendue|default(0) }},
+            revenu: {{ stat.revenu|default(0) }}
+        },
+        {% endfor %}
+    ];
+
+    // 1. Graphique à barres - Top 5 plats
+    const topPlatsCtx = document.getElementById('topPlatsChart').getContext('2d');
+    new Chart(topPlatsCtx, {
+        type: 'bar',
+        data: {
+            labels: platsData.map(p => p.nom),
+            datasets: [{
+                label: 'Nombre de ventes',
+                data: platsData.map(p => p.ventes),
+                backgroundColor: [
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(156, 163, 175, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(139, 92, 246, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(245, 158, 11)',
+                    'rgb(156, 163, 175)',
+                    'rgb(16, 185, 129)',
+                    'rgb(59, 130, 246)',
+                    'rgb(139, 92, 246)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#d1d5db'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#9ca3af'
+                    },
+                    grid: {
+                        color: '#374151'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#9ca3af'
+                    },
+                    grid: {
+                        color: '#374151'
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. Graphique circulaire - Répartition des ventes
+    const ventesCtx = document.getElementById('ventesChart').getContext('2d');
+    new Chart(ventesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: platsData.map(p => p.nom),
+            datasets: [{
+                label: 'Répartition des ventes',
+                data: platsData.map(p => p.revenu),
+                backgroundColor: [
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(156, 163, 175, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(139, 92, 246, 0.8)'
+                ],
+                borderColor: [
+                    'rgb(245, 158, 11)',
+                    'rgb(156, 163, 175)',
+                    'rgb(16, 185, 129)',
+                    'rgb(59, 130, 246)',
+                    'rgb(139, 92, 246)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: '#d1d5db',
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Graphique en ligne - Évolution sur 7 jours
+    const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+    
+    // Données fictives pour 7 jours (à remplacer par des vraies données)
+    const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    const ventesParJour = [12, 19, 15, 25, 22, 30, 28];
+    const revenusParJour = [450, 680, 520, 920, 810, 1100, 950];
+    
+    new Chart(evolutionCtx, {
+        type: 'line',
+        data: {
+            labels: jours,
+            datasets: [
+                {
+                    label: 'Commandes',
+                    data: ventesParJour,
+                    borderColor: 'rgb(245, 158, 11)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Revenus (DH)',
+                    data: revenusParJour,
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#d1d5db'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#9ca3af'
+                    },
+                    grid: {
+                        color: '#374151'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#9ca3af'
+                    },
+                    grid: {
+                        color: '#374151'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Styles pour l'animation
+const style = document.createElement('style');
+style.textContent = `
+@keyframes notificationIn {
+    from { opacity: 0; transform: translateY(-20px) translateX(20px); }
+    to { opacity: 1; transform: translateY(0) translateX(0); }
+}
+.animate-notification {
+    animation: notificationIn 0.3s ease-out;
+}
+.line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+/* Fix pour les images trop grandes */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Taille fixe pour toutes les images de plat */
+.group .relative.h-40 img {
+    height: 160px !important;
+    min-height: 160px !important;
+    max-height: 160px !important;
+    object-fit: cover !important;
+    width: 100% !important;
+}
+
+/* Assure que les cartes ont toutes la même hauteur */
+.group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Responsive images */
+@media (max-width: 640px) {
+    .group .relative.h-40 img {
+        height: 140px !important;
+        min-height: 140px !important;
+        max-height: 140px !important;
+    }
+}
+
+/* Style pour les canvas des graphiques */
+canvas {
+    max-width: 100%;
+}
+`;
+document.head.appendChild(style);
+</script>
 {% endblock %}

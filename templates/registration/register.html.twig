@@ -1,11 +1,762 @@
-<h1>Register</h1>
+{% extends 'base.html.twig' %}
 
-{{ form_start(registrationForm) }}
-    {{ form_row(registrationForm.email) }}
-    {{ form_row(registrationForm.nom) }}
-    {{ form_row(registrationForm.prenom) }}
-    {{ form_row(registrationForm.telephone) }}
-    {{ form_row(registrationForm.adresse) }}
-    {{ form_row(registrationForm.plainPassword) }}
-    <button type="submit">Register</button>
-{{ form_end(registrationForm) }}
+{% block title %}Inscription{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            --secondary-gradient: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            --success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --shadow-hard: 0 20px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .register-container {
+            max-width: 900px;
+        }
+
+        .card-main {
+            background: white;
+            border: none;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-hard);
+        }
+
+        .card-header-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 3rem 2rem;
+        }
+
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group-enhanced {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label-enhanced {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-label-enhanced i {
+            margin-right: 0.5rem;
+            color: #7c3aed;
+        }
+
+        .input-group-enhanced {
+            position: relative;
+        }
+
+        .form-control-enhanced {
+            height: 52px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control-enhanced:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-control-enhanced::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7c3aed;
+            z-index: 10;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .password-toggle:hover {
+            color: #7c3aed;
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+        }
+
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .strength-weak {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+
+        .strength-medium {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        .strength-strong {
+            background: var(--success-gradient);
+        }
+
+        .btn-primary-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-secondary-gradient {
+            background: transparent;
+            border: 2px solid;
+            border-image: var(--secondary-gradient) 1;
+            color: #7c3aed;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary-gradient:hover {
+            background: var(--secondary-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.2);
+        }
+
+        .benefit-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-soft);
+            border-color: #7c3aed;
+        }
+
+        .benefit-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: #7c3aed;
+            font-size: 1.25rem;
+        }
+
+        .form-check-input:checked {
+            background-color: #7c3aed;
+            border-color: #7c3aed;
+        }
+
+        .form-check-label a {
+            color: #7c3aed;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .form-check-label a:hover {
+            text-decoration: underline;
+        }
+
+        .link-primary {
+            color: #7c3aed;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .link-primary:hover {
+            text-decoration: underline;
+        }
+
+        .toast-demo {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 1050;
+            background: var(--success-gradient);
+            color: white;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow-soft);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .floating-alert {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+            animation: slideIn 0.3s ease;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #9ca3af;
+            margin: 0 1rem;
+            position: relative;
+        }
+
+        .step.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 2rem;
+            height: 2px;
+            background: #e5e7eb;
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .register-container {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 2rem !important;
+            }
+            
+            .btn-primary-gradient,
+            .btn-secondary-gradient {
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-5">
+    <div class="register-container">
+        <!-- Indicateur de progression -->
+        <div class="progress-indicator">
+            <div class="step active">
+                <span>1</span>
+            </div>
+            <div class="step">
+                <span>2</span>
+            </div>
+            <div class="step">
+                <span>3</span>
+            </div>
+        </div>
+
+        <!-- Carte principale -->
+        <div class="card card-main mb-5">
+            <!-- En-tête -->
+            <div class="card-header-gradient text-center text-white">
+                <div class="icon-wrapper">
+                    <i class="bi bi-person-plus-fill fs-1"></i>
+                </div>
+                <h1 class="h2 fw-bold mb-2">Commencez votre aventure</h1>
+                <p class="mb-0 opacity-90">Créez votre compte en moins de 2 minutes</p>
+            </div>
+
+            <!-- Corps du formulaire -->
+            <div class="card-body p-4 p-md-5">
+                {{ form_start(registrationForm, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                
+                <div class="row g-4">
+                    <!-- Nom et Prénom -->
+                    <div class="col-md-6">
+                        <div class="form-group-enhanced">
+                            <label class="form-label-enhanced">
+                                <i class="bi bi-person-badge"></i>
+                                Nom
+                            </label>
+                            <div class="input-group-enhanced">
+                                <i class="bi bi-person-badge input-icon"></i>
+                                {{ form_widget(registrationForm.nom, {
+                                    'attr': {
+                                        'class': 'form-control form-control-enhanced',
+                                        'placeholder': 'Votre nom',
+                                        'autocomplete': 'family-name'
+                                    }
+                                }) }}
+                            </div>
+                            <small class="form-text text-muted mt-1 d-block">
+                                Votre nom de famille
+                            </small>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.nom) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group-enhanced">
+                            <label class="form-label-enhanced">
+                                <i class="bi bi-person"></i>
+                                Prénom
+                            </label>
+                            <div class="input-group-enhanced">
+                                <i class="bi bi-person input-icon"></i>
+                                {{ form_widget(registrationForm.prenom, {
+                                    'attr': {
+                                        'class': 'form-control form-control-enhanced',
+                                        'placeholder': 'Votre prénom',
+                                        'autocomplete': 'given-name'
+                                    }
+                                }) }}
+                            </div>
+                            <small class="form-text text-muted mt-1 d-block">
+                                Votre prénom
+                            </small>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.prenom) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <div class="form-group-enhanced">
+                            <label class="form-label-enhanced">
+                                <i class="bi bi-envelope"></i>
+                                Adresse email
+                            </label>
+                            <div class="input-group-enhanced">
+                                <i class="bi bi-envelope input-icon"></i>
+                                {{ form_widget(registrationForm.email, {
+                                    'attr': {
+                                        'class': 'form-control form-control-enhanced',
+                                        'placeholder': 'exemple@email.com',
+                                        'autocomplete': 'email'
+                                    }
+                                }) }}
+                            </div>
+                            <small class="form-text text-muted mt-1 d-block">
+                                <i class="bi bi-shield-check"></i> Nous protégeons vos données
+                            </small>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.email) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Téléphone -->
+                    <div class="col-md-6">
+                        <div class="form-group-enhanced">
+                            <label class="form-label-enhanced">
+                                <i class="bi bi-phone"></i>
+                                Téléphone
+                            </label>
+                            <div class="input-group-enhanced">
+                                <i class="bi bi-phone input-icon"></i>
+                                {{ form_widget(registrationForm.telephone, {
+                                    'attr': {
+                                        'class': 'form-control form-control-enhanced',
+                                        'placeholder': '06 12 34 56 78',
+                                        'autocomplete': 'tel'
+                                    }
+                                }) }}
+                            </div>
+                            <small class="form-text text-muted mt-1 d-block">
+                                Format : 06 12 34 56 78
+                            </small>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.telephone) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adresse -->
+                    <div class="col-12">
+                        <div class="form-group-enhanced">
+                            <label class="form-label-enhanced">
+                                <i class="bi bi-geo-alt"></i>
+                                Adresse
+                            </label>
+                            <div class="input-group-enhanced">
+                                <i class="bi bi-geo-alt input-icon"></i>
+                                {{ form_widget(registrationForm.adresse, {
+                                    'attr': {
+                                        'class': 'form-control form-control-enhanced',
+                                        'placeholder': 'Votre adresse complète',
+                                        'autocomplete': 'street-address'
+                                    }
+                                }) }}
+                            </div>
+                            <small class="form-text text-muted mt-1 d-block">
+                                Rue, code postal, ville
+                            </small>
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.adresse) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mot de passe -->
+                    <div class="col-12">
+                        <div class="form-group-enhanced">
+                            <label class="form-label-enhanced">
+                                <i class="bi bi-key"></i>
+                                Mot de passe
+                            </label>
+                            <div class="input-group-enhanced">
+                                <i class="bi bi-key input-icon"></i>
+                                {{ form_widget(registrationForm.plainPassword, {
+                                    'attr': {
+                                        'class': 'form-control form-control-enhanced',
+                                        'placeholder': 'Créez un mot de passe sécurisé',
+                                        'autocomplete': 'new-password',
+                                        'id': 'passwordInput'
+                                    }
+                                }) }}
+                                <button type="button" class="password-toggle" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Indicateur de force -->
+                            <div class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="passwordStrengthBar"></div>
+                                </div>
+                                <small class="form-text text-muted mt-2 d-block" id="passwordHelp">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Minimum 8 caractères avec majuscules, minuscules et chiffres
+                                </small>
+                            </div>
+                            
+                            <div class="invalid-feedback">
+                                {{ form_errors(registrationForm.plainPassword) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conditions -->
+                    <div class="col-12">
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                J'accepte les 
+                                <a href="#" class="link-primary">conditions d'utilisation</a> 
+                                et la 
+                                <a href="#" class="link-primary">politique de confidentialité</a>
+                            </label>
+                            <div class="invalid-feedback">
+                                Vous devez accepter les conditions pour continuer.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="col-12">
+                        <div class="d-grid d-md-flex gap-3">
+                            <button type="submit" class="btn btn-primary-gradient flex-grow-1">
+                                <i class="bi bi-person-plus me-2"></i>
+                                Créer mon compte
+                            </button>
+                            
+                            <button type="button" class="btn btn-secondary-gradient" id="demoFill">
+                                <i class="bi bi-magic me-2"></i>
+                                Données de démo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                {{ form_end(registrationForm) }}
+
+                <!-- Lien vers connexion -->
+                <div class="text-center mt-5 pt-4 border-top">
+                    <p class="text-muted mb-0">
+                        Déjà membre ?
+                        <a href="{{ path('app_login') }}" class="link-primary ms-1">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Se connecter
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avantages -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h6 class="fw-bold mb-2">Sécurité maximale</h6>
+                    <p class="text-muted small mb-0">
+                        Vos données sont cryptées et protégées
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h6 class="fw-bold mb-2">Inscription rapide</h6>
+                    <p class="text-muted small mb-0">
+                        Créez votre compte en moins de 2 minutes
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <h6 class="fw-bold mb-2">Support 24/7</h6>
+                    <p class="text-muted small mb-0">
+                        Assistance disponible à tout moment
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('passwordInput');
+    
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            const icon = this.querySelector('i');
+            icon.classList.toggle('bi-eye');
+            icon.classList.toggle('bi-eye-slash');
+        });
+    }
+    
+    // Vérificateur de force du mot de passe
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrengthBar');
+            const passwordHelp = document.getElementById('passwordHelp');
+            
+            let strength = 0;
+            let feedback = '';
+            
+            // Calcul de la force
+            if (password.length >= 8) strength += 25;
+            if (/[a-z]/.test(password)) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 15;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 10;
+            
+            strength = Math.min(strength, 100);
+            
+            // Mise à jour de la barre
+            strengthBar.style.width = strength + '%';
+            
+            // Couleur et feedback
+            if (strength < 40) {
+                strengthBar.className = 'strength-fill strength-weak';
+                feedback = '<i class="bi bi-exclamation-triangle me-1"></i>Mot de passe faible - ajoutez des majuscules et chiffres';
+            } else if (strength < 70) {
+                strengthBar.className = 'strength-fill strength-medium';
+                feedback = '<i class="bi bi-check-circle me-1"></i>Mot de passe moyen - vous pouvez faire mieux';
+            } else {
+                strengthBar.className = 'strength-fill strength-strong';
+                feedback = '<i class="bi bi-shield-check me-1"></i>Mot de passe fort - excellent choix !';
+            }
+            
+            passwordHelp.innerHTML = feedback;
+        });
+    }
+    
+    // Remplissage avec données de démo
+    const demoFillBtn = document.getElementById('demoFill');
+    if (demoFillBtn) {
+        demoFillBtn.addEventListener('click', function() {
+            const fields = {
+                'registration_form_nom': 'Martin',
+                'registration_form_prenom': 'Sophie',
+                'registration_form_email': 'sophie.martin@exemple.com',
+                'registration_form_telephone': '0612345678',
+                'registration_form_adresse': '15 Avenue des Champs-Élysées, 75008 Paris',
+                'registration_form_plainPassword_first': 'SecurePass123!',
+                'registration_form_plainPassword_second': 'SecurePass123!'
+            };
+            
+            // Remplir les champs
+            Object.keys(fields).forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.value = fields[fieldId];
+                    field.dispatchEvent(new Event('input', { bubbles: true }));
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+            
+            // Cocher les conditions
+            const termsCheck = document.getElementById('termsCheck');
+            if (termsCheck) {
+                termsCheck.checked = true;
+            }
+            
+            // Notification
+            const toast = document.createElement('div');
+            toast.className = 'toast-demo';
+            toast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+                    <div>
+                        <strong>Données de démo chargées !</strong><br>
+                        <small>Modifiez les informations si nécessaire</small>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        });
+    }
+    
+    // Validation du formulaire
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+    
+    // Amélioration UX : focus sur les champs
+    const inputs = document.querySelectorAll('.form-control-enhanced');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

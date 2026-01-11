@@ -1,15 +1,362 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Dashboard Client{% endblock %}
+{% block title %}👤 Mon Espace - Dashboard{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-gray-50 p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-4">Dashboard Client</h1>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
+    <!-- En-tête -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl shadow-lg">
+                    <i class="fas fa-user-circle text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">
+                        Bonjour, <span class="text-amber-600">{{ app.user.prenom ?? app.user.email|split('@')|first }}</span> !
+                    </h1>
+                    <p class="text-gray-600 mt-2">Bienvenue dans votre espace personnel</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700">
+                    <i class="fas fa-envelope mr-2 text-blue-500"></i>
+                    {{ app.user.email }}
+                </span>
+                <a href="{{ path('app_logout') }}" 
+                   class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 
+                          text-white px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-lg 
+                          hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </div>
 
-    <p class="text-gray-600 mb-6">Bienvenue {{ app.user.email }}</p>
+        <!-- Date et heure -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow border border-gray-200 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="fas fa-calendar-day text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Aujourd'hui</p>
+                        <p class="text-lg font-bold text-gray-800" id="current-date">{{ "now"|date("d/m/Y") }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <i class="fas fa-clock text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Heure actuelle</p>
+                        <p class="text-lg font-bold text-gray-800" id="current-time">{{ "now"|date("H:i") }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_logout') }}" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition">
-        Déconnexion
-    </a>
+    <!-- Statistiques rapides -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Panier -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all hover:border-amber-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-amber-100 rounded-xl">
+                    <i class="fas fa-shopping-cart text-amber-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">
+                    {% set panier = app.user.paniers.first %}
+                    {{ panier and panier.panierItems|length > 0 ? panier.panierItems|length : 0 }}
+                </span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Mon Panier</h3>
+            <p class="text-gray-500 text-sm mb-4">Articles en attente</p>
+            <a href="{{ path('client_panier') }}" 
+               class="inline-flex items-center text-amber-600 hover:text-amber-700 font-medium">
+                Voir le panier
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+
+        <!-- Commandes -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all hover:border-blue-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-blue-100 rounded-xl">
+                    <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">{{ app.user.commandes|length }}</span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Mes Commandes</h3>
+            <p class="text-gray-500 text-sm mb-4">Historique des achats</p>
+            <a href="{{ path('client_commandes') }}" 
+               class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                Voir les commandes
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+
+        <!-- Dépenses -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all hover:border-green-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-green-100 rounded-xl">
+                    <i class="fas fa-coins text-green-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-gray-800">
+                    {% set totalDepenses = 0 %}
+                    {% for commande in app.user.commandes %}
+                        {% set totalDepenses = totalDepenses + commande.total %}
+                    {% endfor %}
+                    {{ totalDepenses|number_format(2, ',', ' ') }} DH
+                </span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Total dépensé</h3>
+            <p class="text-gray-500 text-sm mb-4">Depuis le début</p>
+            <span class="inline-flex items-center text-green-600 font-medium">
+                <i class="fas fa-chart-line mr-2"></i>
+                Suivi budgétaire
+            </span>
+        </div>
+
+        <!-- Statut -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all hover:border-purple-400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-purple-100 rounded-xl">
+                    <i class="fas fa-user-shield text-purple-600 text-xl"></i>
+                </div>
+                <span class="text-lg font-bold text-gray-800">
+                    {% if 'ROLE_ADMIN' in app.user.roles %}
+                        Administrateur
+                    {% elseif 'ROLE_CHEF' in app.user.roles %}
+                        Chef
+                    {% elseif 'ROLE_LIVREUR' in app.user.roles %}
+                        Livreur
+                    {% elseif 'ROLE_RECEPTIONNISTE' in app.user.roles %}
+                        Réceptionniste
+                    {% else %}
+                        Client
+                    {% endif %}
+                </span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">Mon Statut</h3>
+            <p class="text-gray-500 text-sm mb-4">Type de compte</p>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                <i class="fas fa-badge-check mr-1"></i>
+                Compte vérifié
+            </span>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="mb-10">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <i class="fas fa-bolt text-amber-500"></i>
+            Accès rapide
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{{ path('app_plat_index') }}" 
+               class="bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 
+                      text-white p-6 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-utensils text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Nouvelle Commande</h3>
+                    <p class="text-amber-100 text-sm">Choisir des plats</p>
+                </div>
+            </a>
+            
+            <a href="{{ path('client_panier') }}" 
+               class="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
+                      text-white p-6 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-shopping-cart text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Voir Panier</h3>
+                    <p class="text-blue-100 text-sm">Gérer mes articles</p>
+                </div>
+            </a>
+            
+            <a href="{{ path('client_commandes') }}" 
+               class="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 
+                      text-white p-6 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-history text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Historique</h3>
+                    <p class="text-green-100 text-sm">Suivre mes commandes</p>
+                </div>
+            </a>
+            
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-headset text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Support</h3>
+                    <p class="text-purple-100 text-sm">Besoin d'aide ?</p>
+                    <button onclick="contactSupport()" 
+                            class="mt-3 bg-white text-purple-600 hover:bg-gray-100 px-4 py-2 rounded-lg 
+                                   font-medium transition">
+                        Contacter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières commandes -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                <i class="fas fa-receipt text-blue-500"></i>
+                Dernières commandes
+            </h2>
+        </div>
+        
+        <div class="p-6">
+            {% if app.user.commandes|length > 0 %}
+                {% set recentesCommandes = app.user.commandes|slice(0, 3) %}
+                {% for commande in recentesCommandes %}
+                <div class="border border-gray-200 rounded-xl p-4 mb-4 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-gray-800">Commande #{{ commande.id }}</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium 
+                                {% if commande.statut == 'terminee' %}bg-green-100 text-green-800
+                                {% elseif commande.statut == 'en_livraison' %}bg-blue-100 text-blue-800
+                                {% elseif commande.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                                {% elseif commande.statut == 'annulee' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ commande.statut|replace({'_': ' '})|title }}
+                            </span>
+                        </div>
+                        <span class="font-bold text-gray-800">{{ commande.total }} DH</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-2">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        {{ commande.date|date("d/m/Y à H:i") }}
+                    </div>
+                    <a href="{{ path('client_commande_show', {'id': commande.id}) }}" 
+                       class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        Voir les détails
+                        <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                    </a>
+                </div>
+                {% endfor %}
+                
+                {% if app.user.commandes|length > 3 %}
+                <div class="text-center pt-4 border-t border-gray-200">
+                    <a href="{{ path('client_commandes') }}" 
+                       class="text-blue-600 hover:text-blue-800 font-medium">
+                        Voir toutes les commandes ({{ app.user.commandes|length }})
+                    </a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-10">
+                    <div class="text-gray-300 mb-4">
+                        <i class="fas fa-shopping-bag text-6xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">Aucune commande</h3>
+                    <p class="text-gray-500 mb-4">Vous n'avez pas encore passé de commande</p>
+                    <a href="{{ path('app_plat_index') }}" 
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 
+                              text-white rounded-lg font-bold hover:from-amber-600 hover:to-amber-700 transition">
+                        <i class="fas fa-utensils mr-2"></i>
+                        Passer ma première commande
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
+
+<!-- Scripts -->
+<script>
+// Heure en temps réel
+function updateTime() {
+    const now = new Date();
+    const timeElement = document.getElementById('current-time');
+    const dateElement = document.getElementById('current-date');
+    
+    if (timeElement) {
+        timeElement.textContent = now.toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+    
+    if (dateElement) {
+        dateElement.textContent = now.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+}
+
+// Mettre à jour l'heure toutes les secondes
+setInterval(updateTime, 1000);
+updateTime(); // Initialiser
+
+// Contact support
+function contactSupport() {
+    alert('📞 Service client : 05 XX XX XX XX\n✉️ Email : support@restaurant.com\n\nNotre équipe est à votre écoute !');
+}
+
+// Animation pour les cartes
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.bg-white.rounded-2xl');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+});
+</script>
+
+<!-- Styles supplémentaires -->
+<style>
+    /* Animation pour les gradients */
+    .bg-gradient-to-br {
+        background-size: 200% 200%;
+        animation: gradientShift 15s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Style pour les cartes au survol */
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+    
+    /* Style pour les badges */
+    .badge-pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+</style>
 {% endblock %}

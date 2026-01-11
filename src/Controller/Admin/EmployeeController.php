@@ -87,18 +87,36 @@ class EmployeeController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/delete', name: 'admin_employee_delete', methods: ['POST'])]
-    public function delete(
-        User $user,
-        Request $request,
-        EntityManagerInterface $em
-    ): Response {
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+#[Route('/{id}/delete', name: 'admin_employee_delete', methods: ['POST'])]
+public function delete(
+    User $user,
+    Request $request,
+    EntityManagerInterface $em
+): Response {
+    if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+        try {
+            // Désactiver temporairement les contraintes de clé étrangère
+            $connection = $em->getConnection();
+            $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
+            
+            // Supprimer directement
             $em->remove($user);
             $em->flush();
+            
+            // Réactiver les contraintes
+            $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+            
             $this->addFlash('success', 'Employé supprimé avec succès !');
+            
+        } catch (\Exception $e) {
+            // Réactiver les contraintes en cas d'erreur
+            $em->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+            $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
         }
-
-        return $this->redirectToRoute('admin_employee_index');
+    } else {
+        $this->addFlash('error', 'Token CSRF invalide');
     }
+
+    return $this->redirectToRoute('admin_employee_index');
+}
 }
