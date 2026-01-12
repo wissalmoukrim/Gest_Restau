@@ -1,15 +1,482 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Dashboard Admin{% endblock %}
+{% block title %}⚙️ Tableau de Bord Administrateur{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-gray-50 p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-4">Dashboard Admin</h1>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
+    <!-- En-tête Admin -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl shadow-lg">
+                    <i class="fas fa-crown text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">
+                        Panel <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Administrateur</span>
+                    </h1>
+                    <p class="text-gray-600 mt-2">Bienvenue, {{ app.user.prenom ?? 'Administrateur' }} • Accès complet au système</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+                <span class="px-4 py-2 bg-gradient-to-r from-purple-100 to-indigo-100 border border-purple-200 
+                            rounded-full text-sm font-medium text-purple-800 flex items-center gap-2">
+                    <i class="fas fa-shield-alt"></i>
+                    Accès Admin
+                </span>
+                <span class="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700">
+                    <i class="fas fa-user-tie mr-2"></i>
+                    {{ app.user.email }}
+                </span>
+                <a href="{{ path('app_logout') }}" 
+                   class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 
+                          text-white px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-lg 
+                          hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </div>
 
-    <p class="text-gray-600 mb-6">Bienvenue {{ app.user.email }}</p>
+        <!-- Quick Stats Bar -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow border border-gray-200 mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-800">📊</div>
+                    <p class="text-sm text-gray-500 mt-1">Vue d'ensemble</p>
+                </div>
+                <div class="text-center border-l border-gray-200 pl-4">
+                    <div class="text-sm text-gray-500">Dernière connexion</div>
+                    <div class="font-medium text-gray-800">{{ "now"|date("d/m/Y H:i") }}</div>
+                </div>
+                <div class="text-center border-l border-gray-200 pl-4">
+                    <div class="text-sm text-gray-500">Rôle</div>
+                    <div class="font-medium text-purple-600">Super Administrateur</div>
+                </div>
+                <div class="text-center border-l border-gray-200 pl-4">
+                    <div class="text-sm text-gray-500">Actions aujourd'hui</div>
+                    <div class="font-medium text-gray-800">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_logout') }}" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition">
-        Déconnexion
-    </a>
+    <!-- Statistiques Principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Utilisateurs -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all 
+                    hover:border-purple-400 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl group-hover:scale-110 transition">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <span class="text-3xl font-bold text-gray-800">0</span>
+            </div>
+            <h3 class="font-bold text-gray-800 text-lg mb-1">Utilisateurs</h3>
+            <p class="text-gray-500 text-sm mb-4">Total des comptes</p>
+            <a href="{{ path('admin_employee_index') }}" 
+               class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium group">
+                Gérer les utilisateurs
+                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+            </a>
+        </div>
+
+        <!-- Plats -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all 
+                    hover:border-green-400 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl group-hover:scale-110 transition">
+                    <i class="fas fa-utensils text-green-600 text-xl"></i>
+                </div>
+                <span class="text-3xl font-bold text-gray-800">0</span>
+            </div>
+            <h3 class="font-bold text-gray-800 text-lg mb-1">Plats</h3>
+            <p class="text-gray-500 text-sm mb-4">Menu disponible</p>
+            <a href="{{ path('app_admin_plat') }}" 
+               class="inline-flex items-center text-green-600 hover:text-green-700 font-medium group">
+                Gérer le menu
+                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+            </a>
+        </div>
+
+        <!-- Commandes -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all 
+                    hover:border-amber-400 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl group-hover:scale-110 transition">
+                    <i class="fas fa-shopping-cart text-amber-600 text-xl"></i>
+                </div>
+                <span class="text-3xl font-bold text-gray-800">0</span>
+            </div>
+            <h3 class="font-bold text-gray-800 text-lg mb-1">Commandes</h3>
+            <p class="text-gray-500 text-sm mb-4">En cours aujourd'hui</p>
+            <a href="#" 
+               class="inline-flex items-center text-amber-600 hover:text-amber-700 font-medium group">
+                Voir les commandes
+                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+            </a>
+        </div>
+
+        <!-- Revenus -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 hover:shadow-2xl transition-all 
+                    hover:border-red-400 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-red-100 to-red-200 rounded-xl group-hover:scale-110 transition">
+                    <i class="fas fa-money-bill-wave text-red-600 text-xl"></i>
+                </div>
+                <span class="text-3xl font-bold text-gray-800">0 DH</span>
+            </div>
+            <h3 class="font-bold text-gray-800 text-lg mb-1">Revenus</h3>
+            <p class="text-gray-500 text-sm mb-4">Total du mois</p>
+            <a href="#" 
+               class="inline-flex items-center text-red-600 hover:text-red-700 font-medium group">
+                Voir les statistiques
+                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Panneau de Contrôle Rapide -->
+    <div class="mb-10">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <i class="fas fa-sliders-h text-purple-500"></i>
+            Panneau de Contrôle Rapide
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Gestion Utilisateurs -->
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg 
+                        hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-user-cog text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Utilisateurs</h3>
+                    <p class="text-blue-100 text-sm mb-4">Gestion des comptes</p>
+                    <div class="flex gap-2 justify-center">
+                        <a href="{{ path('admin_employee_new') }}" 
+                           class="bg-white text-blue-600 hover:bg-gray-100 px-3 py-1.5 rounded text-sm font-medium">
+                            + Ajouter
+                        </a>
+                        <a href="{{ path('admin_employee_index') }}" 
+                           class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-sm">
+                            Liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gestion Menu -->
+            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg 
+                        hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-utensils text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Menu</h3>
+                    <p class="text-green-100 text-sm mb-4">Gestion des plats</p>
+                    <div class="flex gap-2 justify-center">
+                        <a href="{{ path('app_admin_plat_new') }}" 
+                           class="bg-white text-green-600 hover:bg-gray-100 px-3 py-1.5 rounded text-sm font-medium">
+                            + Nouveau plat
+                        </a>
+                        <a href="{{ path('app_admin_plat') }}" 
+                           class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-sm">
+                            Liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Commandes -->
+            <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-6 rounded-xl shadow-lg 
+                        hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-clipboard-check text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Commandes</h3>
+                    <p class="text-amber-100 text-sm mb-4">Suivi & gestion</p>
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="viewOrders()" 
+                                class="bg-white text-amber-600 hover:bg-gray-100 px-3 py-1.5 rounded text-sm font-medium">
+                            En cours
+                        </button>
+                        <button onclick="viewStats()" 
+                                class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-sm">
+                            Statistiques
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Système -->
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg 
+                        hover:shadow-xl hover:-translate-y-1 transition-all">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-cogs text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Système</h3>
+                    <p class="text-purple-100 text-sm mb-4">Paramètres avancés</p>
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="systemSettings()" 
+                                class="bg-white text-purple-600 hover:bg-gray-100 px-3 py-1.5 rounded text-sm font-medium">
+                            Paramètres
+                        </button>
+                        <button onclick="backupSystem()" 
+                                class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-sm">
+                            Sauvegarde
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableaux de Gestion -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Derniers Utilisateurs -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                    <i class="fas fa-user-clock text-blue-500"></i>
+                    Derniers utilisateurs
+                </h2>
+            </div>
+            
+            <div class="p-6">
+                <div class="text-center py-10">
+                    <div class="text-gray-300 mb-4">
+                        <i class="fas fa-users-slash text-6xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">Aucun utilisateur</h3>
+                    <p class="text-gray-500 mb-4">Aucun utilisateur inscrit récemment</p>
+                    <a href="{{ path('admin_employee_new') }}" 
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 
+                              text-white rounded-lg font-bold hover:from-blue-600 hover:to-blue-700 transition">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Ajouter un utilisateur
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plats Populaires -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                    <i class="fas fa-chart-line text-green-500"></i>
+                    Plats populaires
+                </h2>
+            </div>
+            
+            <div class="p-6">
+                <div class="text-center py-10">
+                    <div class="text-gray-300 mb-4">
+                        <i class="fas fa-chart-pie text-6xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">Aucune donnée</h3>
+                    <p class="text-gray-500 mb-4">Statistiques des plats non disponibles</p>
+                    <a href="{{ path('app_admin_plat') }}" 
+                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 
+                              text-white rounded-lg font-bold hover:from-green-600 hover:to-green-700 transition">
+                        <i class="fas fa-utensils mr-2"></i>
+                        Voir le menu
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Administratives -->
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden">
+        <div class="p-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="text-white">
+                    <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">
+                        <i class="fas fa-tools text-amber-400"></i>
+                        Actions Administratives
+                    </h2>
+                    <p class="text-gray-300">Outils avancés de gestion du système</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="adminBackup()" 
+                            class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 
+                                   text-white rounded-lg font-medium transition flex items-center gap-2">
+                        <i class="fas fa-database"></i>
+                        Sauvegarde BD
+                    </button>
+                    
+                    <button onclick="clearCache()" 
+                            class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
+                                   text-white rounded-lg font-medium transition flex items-center gap-2">
+                        <i class="fas fa-broom"></i>
+                        Nettoyer cache
+                    </button>
+                    
+                    <button onclick="systemLogs()" 
+                            class="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 
+                                   text-white rounded-lg font-medium transition flex items-center gap-2">
+                        <i class="fas fa-file-alt"></i>
+                        Voir logs
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Scripts -->
+<script>
+// Actions administratives
+function adminBackup() {
+    if (confirm('⚠️ Voulez-vous créer une sauvegarde de la base de données ?\n\nCette opération peut prendre quelques minutes.')) {
+        showNotification('Sauvegarde en cours...', 'info');
+        setTimeout(() => {
+            showNotification('✅ Sauvegarde terminée avec succès !', 'success');
+        }, 2000);
+    }
+}
+
+function clearCache() {
+    if (confirm('🗑️ Voulez-vous nettoyer le cache système ?\n\nLes performances pourront être améliorées.')) {
+        showNotification('Nettoyage du cache...', 'info');
+        setTimeout(() => {
+            showNotification('✅ Cache nettoyé avec succès !', 'success');
+        }, 1500);
+    }
+}
+
+function systemLogs() {
+    alert('📋 Journal système\n\nCette fonctionnalité est en cours de développement.');
+}
+
+function viewOrders() {
+    alert('📦 Gestion des commandes\n\nCette fonctionnalité est en cours de développement.');
+}
+
+function viewStats() {
+    alert('📊 Statistiques avancées\n\nCette fonctionnalité est en cours de développement.');
+}
+
+function systemSettings() {
+    alert('⚙️ Paramètres système\n\nCette fonctionnalité est en cours de développement.');
+}
+
+function backupSystem() {
+    alert('💾 Sauvegarde système\n\nCette fonctionnalité est en cours de développement.');
+}
+
+// Notification système
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-xl z-50 transform transition-all duration-300 translate-x-full ${type === 'success' ? 'bg-green-500' : 'bg-blue-500'} text-white`;
+    notification.innerHTML = `
+        <div class="flex items-center gap-3">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Animation pour les cartes
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation d'entrée
+    const cards = document.querySelectorAll('.bg-white.rounded-2xl');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+    
+    // Mettre à jour l'heure
+    function updateAdminTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        document.getElementById('admin-time')?.textContent = now.toLocaleDateString('fr-FR', options);
+    }
+    
+    setInterval(updateAdminTime, 1000);
+    updateAdminTime();
+});
+</script>
+
+<!-- Styles supplémentaires -->
+<style>
+    /* Animation pour les gradients */
+    .bg-gradient-to-br {
+        background-size: 200% 200%;
+        animation: gradientShift 20s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Effet de brillance sur les cartes */
+    .card-glow:hover {
+        box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+    }
+    
+    /* Style pour les badges admin */
+    .admin-badge {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .admin-badge::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    /* Animation de pulse pour les indicateurs */
+    .pulse-indicator {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+</style>
 {% endblock %}

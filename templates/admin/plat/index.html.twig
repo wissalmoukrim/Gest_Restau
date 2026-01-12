@@ -1,209 +1,392 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Liste des plats - Administration{% endblock %}
+{% block title %}🍽️ Gestion des plats{% endblock %}
 
 {% block body %}
-<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-    
-    {# ========== MESSAGES FLASH ========== #}
-    {% for message in app.flashes('success') %}
-        <div style="background: #4CAF50; color: white; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: flex; align-items: center;">
-            <span style="font-size: 20px; margin-right: 10px;">✅</span>
-            <span>{{ message }}</span>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Messages flash -->
+        {% for message in app.flashes('success') %}
+        <div class="mb-6 p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg 
+                    flex items-center animate-fade-in-down">
+            <i class="fas fa-check-circle text-xl mr-3"></i>
+            <span class="font-medium">{{ message }}</span>
         </div>
-    {% endfor %}
-    
-    {% for message in app.flashes('error') %}
-        <div style="background: #f44336; color: white; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: flex; align-items: center;">
-            <span style="font-size: 20px; margin-right: 10px;">❌</span>
-            <span>{{ message }}</span>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+        <div class="mb-6 p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-lg 
+                    flex items-center animate-fade-in-down">
+            <i class="fas fa-exclamation-circle text-xl mr-3"></i>
+            <span class="font-medium">{{ message }}</span>
         </div>
-    {% endfor %}
-    {# ========== FIN MESSAGES FLASH ========== #}
-    
-    {# ========== EN-TÊTE ========== #}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
-        <div>
-            <h1 style="color: #333; margin: 0; font-size: 28px;">🍽️ Liste des plats</h1>
-            <p style="color: #666; margin: 5px 0 0 0;">Gérez votre carte des plats</p>
+        {% endfor %}
+
+        <!-- Header -->
+        <div class="mb-8">
+            <!-- Breadcrumb -->
+            <div class="flex items-center text-sm text-gray-600 mb-6">
+                <a href="{{ path('dashboard') }}" 
+                   class="inline-flex items-center hover:text-green-600 transition-colors">
+                    <i class="fas fa-home mr-2"></i>
+                    Dashboard
+                </a>
+                <span class="mx-2">/</span>
+                <span class="text-gray-900 font-medium">Plats</span>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">🍽️ Gestion des plats</h1>
+                    <p class="text-gray-600">Gérez votre menu et vos plats</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <!-- Stats -->
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-utensils text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">{{ plats|length }}</p>
+                                <p class="text-sm text-gray-600">Plat(s)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Button -->
+                    <a href="{{ path('app_admin_plat_new') }}" 
+                       class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-green-600 
+                              text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl 
+                              hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:-translate-y-1">
+                        <i class="fas fa-plus-circle"></i>
+                        Nouveau plat
+                    </a>
+                </div>
+            </div>
         </div>
-        <a href="{{ path('app_admin_plat_new') }}" 
-           style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; 
-                  font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: background 0.3s;"
-           onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
-            <span style="font-size: 18px;">+</span>
-            Ajouter un plat
-        </a>
-    </div>
-    {# ========== FIN EN-TÊTE ========== #}
-    
-    {# ========== DEBUG ========== #}
-    <div style="background: #f0f0f0; padding: 10px 15px; margin-bottom: 20px; border-radius: 4px; border-left: 4px solid #2196F3;">
-        <strong>📊 STATISTIQUES :</strong> 
-        <span style="margin-left: 10px;">{{ plats|length }} plat(s) dans la base de données</span>
-    </div>
-    {# ========== FIN DEBUG ========== #}
-    
-    {# ========== LISTE DES PLATS ========== #}
-    {% if plats|length > 0 %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+
+        <!-- Plat Grid -->
+        {% if plats|length > 0 %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {% for plat in plats %}
-                <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: white; 
-                            box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;"
-                     onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';"
-                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.1)';">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden 
+                        hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <!-- Image Container -->
+                <div class="relative h-48 overflow-hidden">
+                    {% if plat.image %}
+                    <img src="{{ asset('uploads/' ~ plat.image) }}" 
+                         alt="{{ plat.nom }}"
+                         class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500">
+                    {% else %}
+                    <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <i class="fas fa-utensils text-gray-400 text-5xl"></i>
+                    </div>
+                    {% endif %}
                     
-                    {# En-tête du plat (Nom + Prix) #}
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                        <h3 style="margin: 0; color: #333; font-size: 20px; line-height: 1.3;">{{ plat.nom }}</h3>
-                        <span style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 5px 12px; 
-                                     border-radius: 20px; font-size: 16px; font-weight: bold; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);">
-                            {{ plat.prix }} DH
+                    <!-- Disponibility Badge -->
+                    <div class="absolute top-4 right-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold 
+                                    {{ plat.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            <i class="fas fa-{{ plat.disponible ? 'check' : 'times' }} mr-1"></i>
+                            {{ plat.disponible ? 'Disponible' : 'Indisponible' }}
                         </span>
                     </div>
                     
-                    {# Image du plat #}
-                    {% if plat.image %}
-                        <div style="margin-bottom: 15px; overflow: hidden; border-radius: 6px;">
-                            <img src="{{ asset('uploads/' ~ plat.image) }}" 
-                                 alt="{{ plat.nom }}" 
-                                 style="width: 100%; height: 180px; object-fit: cover; transition: transform 0.5s;"
-                                 onmouseover="this.style.transform='scale(1.05)'"
-                                 onmouseout="this.style.transform='scale(1)'">
-                        </div>
-                    {% else %}
-                        <div style="margin-bottom: 15px; background: #f5f5f5; border-radius: 6px; height: 180px; 
-                                    display: flex; align-items: center; justify-content: center;">
-                            <span style="font-size: 48px; color: #bbb;">🍽️</span>
-                        </div>
-                    {% endif %}
-                    
-                    {# Description #}
-                    <div style="margin-bottom: 15px;">
-                        <p style="color: #666; margin: 0; line-height: 1.5; font-size: 14px; 
-                                  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                            {{ plat.description|default('Aucune description disponible') }}
-                        </p>
+                    <!-- Price Badge -->
+                    <div class="absolute bottom-4 left-4">
+                        <span class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 
+                                    text-white font-bold rounded-lg shadow-md">
+                            <i class="fas fa-tag mr-2"></i>
+                            {{ plat.prix }} DH
+                        </span>
                     </div>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6">
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-1">{{ plat.nom }}</h3>
                     
-                    {# Statut disponibilité #}
-                    <div style="margin-bottom: 20px; padding: 8px 12px; background: {{ plat.disponible ? '#e8f5e9' : '#ffebee' }}; 
-                                border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
-                        {% if plat.disponible %}
-                            <span style="color: #2e7d32; font-size: 16px;">✅</span>
-                            <span style="color: #2e7d32; font-weight: 500;">Disponible</span>
-                        {% else %}
-                            <span style="color: #c62828; font-size: 16px;">❌</span>
-                            <span style="color: #c62828; font-weight: 500;">Non disponible</span>
-                        {% endif %}
+                    <!-- Description -->
+                    <p class="text-gray-600 mb-4 text-sm line-clamp-2">
+                        {{ plat.description|default('Aucune description disponible') }}
+                    </p>
+                    
+                    <!-- ID Badge -->
+                    <div class="mb-4">
+                        <span class="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            <i class="fas fa-hashtag mr-1"></i>
+                            ID: {{ plat.id }}
+                        </span>
                     </div>
-                    
-                    {# Boutons d'action #}
-                    <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+
+                    <!-- Actions -->
+                    <div class="flex gap-3 pt-4 border-t border-gray-100">
+                        <!-- Edit -->
                         <a href="{{ path('app_admin_plat_edit', {'id': plat.id}) }}" 
-                           style="flex: 1; background: #FF9800; color: white; padding: 10px; text-decoration: none; 
-                                  border-radius: 4px; text-align: center; font-weight: 500; transition: background 0.3s;
-                                  display: flex; align-items: center; justify-content: center; gap: 8px;"
-                           onmouseover="this.style.background='#F57C00'" onmouseout="this.style.background='#FF9800'">
-                            <span>✏️</span>
-                            <span>Modifier</span>
+                           class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 
+                                  text-white font-medium px-4 py-2 rounded-lg hover:from-amber-600 hover:to-amber-700 
+                                  transition-all duration-200">
+                            <i class="fas fa-edit"></i>
+                            Modifier
                         </a>
-                        
+
+                        <!-- Delete -->
                         <form method="post" 
                               action="{{ path('app_admin_plat_delete', {'id': plat.id}) }}" 
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer le plat \\'{{ plat.nom }}\\' ?');"
-                              style="flex: 1; margin: 0;">
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer \\'{{ plat.nom }}\\' ?');"
+                              class="flex-1">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete_plat_' ~ plat.id) }}">
                             <button type="submit" 
-                                    style="width: 100%; background: #f44336; color: white; border: none; padding: 10px; 
-                                           border-radius: 4px; font-weight: 500; cursor: pointer; transition: background 0.3s;
-                                           display: flex; align-items: center; justify-content: center; gap: 8px;"
-                                    onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#f44336'">
-                                <span>🗑️</span>
-                                <span>Supprimer</span>
+                                    class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 
+                                           text-white font-medium px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 
+                                           transition-all duration-200">
+                                <i class="fas fa-trash"></i>
+                                Supprimer
                             </button>
                         </form>
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
-        
-        {# Résumé #}
-        <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 6px; text-align: center;">
-            <p style="margin: 0; color: #666;">
-                Affichage de <strong>{{ plats|length }}</strong> plat{% if plats|length > 1 %}s{% endif %} au total
-            </p>
+
+        <!-- Summary -->
+        <div class="mt-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Résumé</h3>
+                    <p class="text-gray-600">
+                        Affichage de <span class="font-bold text-green-600">{{ plats|length }}</span> 
+                        plat{% if plats|length > 1 %}s{% endif %}
+                    </p>
+                </div>
+               
+            </div>
         </div>
-        
-    {% else %}
-        {# ========== AUCUN PLAT ========== #}
-        <div style="text-align: center; padding: 60px 20px; background: #f9f9f9; border-radius: 12px; border: 2px dashed #ddd; margin-top: 20px;">
-            <div style="font-size: 72px; margin-bottom: 20px; color: #ccc;">🍽️</div>
-            <h3 style="color: #666; margin-bottom: 10px; font-size: 24px;">Aucun plat pour le moment</h3>
-            <p style="color: #888; max-width: 500px; margin: 0 auto 30px auto; line-height: 1.6;">
-                Votre carte des plats est vide. Commencez par ajouter votre premier plat pour construire votre menu.
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div class="w-32 h-32 mb-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl 
+                        flex items-center justify-center shadow-inner">
+                <i class="fas fa-utensils text-gray-400 text-6xl"></i>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Aucun plat trouvé</h3>
+            <p class="text-gray-600 max-w-md mb-8">
+                Votre menu est vide. Commencez par ajouter vos premiers plats pour construire votre carte.
             </p>
-            <a href="{{ path('app_admin_plat_new') }}" 
-               style="background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; padding: 14px 28px; 
-                      text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;
-                      display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3); 
-                      transition: transform 0.2s, box-shadow 0.2s;"
-               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(76, 175, 80, 0.4)';"
-               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 8px rgba(76, 175, 80, 0.3)';">
-                <span style="font-size: 20px;">+</span>
-                <span>Ajouter mon premier plat</span>
-            </a>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="{{ path('app_admin_plat_new') }}" 
+                   class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-green-600 
+                          text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl 
+                          hover:from-green-600 hover:to-green-700 transition-all duration-300">
+                    <i class="fas fa-plus-circle"></i>
+                    Ajouter un plat
+                </a>
+                
+                <a href="{{ path('dashboard') }}" 
+                   class="inline-flex items-center justify-center gap-3 border-2 border-gray-300 
+                          text-gray-700 font-medium px-8 py-3 rounded-xl hover:border-gray-400 
+                          hover:bg-gray-50 transition-all duration-300">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour au dashboard
+                </a>
+            </div>
+            
+            <!-- Tips -->
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl">
+                <div class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <div class="w-12 h-12 mb-4 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-image text-blue-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-900 mb-2">Ajoutez des photos</h4>
+                    <p class="text-sm text-gray-600">
+                        Une belle photo augmente l'appétit de vos clients
+                    </p>
+                </div>
+                
+                <div class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <div class="w-12 h-12 mb-4 bg-green-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-tag text-green-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-900 mb-2">Prix attractifs</h4>
+                    <p class="text-sm text-gray-600">
+                        Des prix clairs et compétitifs pour vos plats
+                    </p>
+                </div>
+                
+                <div class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <div class="w-12 h-12 mb-4 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-clock text-purple-600 text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-900 mb-2">Gestion facile</h4>
+                    <p class="text-sm text-gray-600">
+                        Modifiez disponibilité et prix en un clic
+                    </p>
+                </div>
+            </div>
         </div>
-        {# ========== FIN AUCUN PLAT ========== #}
-    {% endif %}
-    {# ========== FIN LISTE DES PLATS ========== #}
-    
+        {% endif %}
+
+        <!-- Floating Action Button (Mobile) -->
+        <a href="{{ path('app_admin_plat_new') }}" 
+           class="fixed bottom-6 right-6 md:hidden w-14 h-14 bg-gradient-to-r from-green-500 to-green-600 
+                  text-white rounded-full shadow-2xl flex items-center justify-center 
+                  hover:from-green-600 hover:to-green-700 transition-all duration-300 z-50">
+            <i class="fas fa-plus text-xl"></i>
+        </a>
+    </div>
 </div>
 
-{# ========== STYLE GLOBAL ========== #}
+<!-- Custom Styles -->
 <style>
-    * {
-        box-sizing: border-box;
+    .animate-fade-in-down {
+        animation: fadeInDown 0.5s ease-out;
     }
-    
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        line-height: 1.6;
-        background: #f5f5f5;
-        margin: 0;
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
-    a {
-        text-decoration: none;
+
+    .line-clamp-1 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
     }
-    
-    button, input[type="submit"] {
-        font-family: inherit;
+
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
     }
-    
-    @media (max-width: 768px) {
-        .container {
-            padding: 15px;
+
+    .transition-all {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Hover effects */
+    .group:hover .group-hover\:scale-110 {
+        transform: scale(1.1);
+    }
+
+    /* Smooth shadow transitions */
+    .shadow-lg {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .hover\:shadow-xl:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Gradient borders */
+    .border-gradient {
+        border-image: linear-gradient(to right, #4CAF50, #2196F3) 1;
+    }
+
+    /* Loading skeleton (for future use) */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
         }
-        
-        .grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        
-        .actions {
-            flex-direction: column;
-        }
-        
-        .actions a, .actions form {
-            width: 100%;
+        100% {
+            background-position: -200% 0;
         }
     }
 </style>
-{# ========== FIN STYLE GLOBAL ========== #}
+
+<!-- JavaScript Enhancements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation de suppression avec sweet alert (optionnel)
+    const deleteForms = document.querySelectorAll('form[onsubmit*="confirm"]');
+    deleteForms.forEach(form => {
+        const originalSubmit = form.onsubmit;
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            
+            // Récupère le nom du plat
+            const platName = this.getAttribute('onsubmit').match(/\\'([^']+)\\'/)[1];
+            
+            // Custom confirmation
+            if (confirm(`Supprimer "${platName}" ?\nCette action est irréversible.`)) {
+                this.submit();
+            }
+        };
+    });
+
+    // Animation au scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-in-down');
+            }
+        });
+    }, observerOptions);
+
+    // Observe les cartes
+    document.querySelectorAll('.grid > div').forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        observer.observe(card);
+    });
+
+    // Tooltips pour les badges
+    const badges = document.querySelectorAll('[title]');
+    badges.forEach(badge => {
+        badge.addEventListener('mouseenter', (e) => {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'fixed z-50 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl';
+            tooltip.textContent = e.target.getAttribute('title');
+            document.body.appendChild(tooltip);
+            
+            const rect = e.target.getBoundingClientRect();
+            tooltip.style.top = `${rect.top - 40}px`;
+            tooltip.style.left = `${rect.left + rect.width/2 - tooltip.offsetWidth/2}px`;
+            
+            e.target.dataset.tooltipId = tooltip;
+        });
+        
+        badge.addEventListener('mouseleave', (e) => {
+            if (e.target.dataset.tooltipId) {
+                e.target.dataset.tooltipId.remove();
+            }
+        });
+    });
+
+    // Filtre de recherche (exemple futur)
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Rechercher un plat...';
+    searchInput.className = 'w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500';
+    
+    // Vous pouvez ajouter ce champ dans le header si besoin
+    // document.querySelector('.header-actions').prepend(searchInput);
+});
+</script>
 {% endblock %}

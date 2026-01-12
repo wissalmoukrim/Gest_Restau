@@ -5,22 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gest Restau{% endblock %}</title>
 
-    <!-- TailwindCSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     {% block stylesheets %}{% endblock %}
 </head>
 
 <body class="bg-gradient-to-br from-gray-100 to-amber-50 min-h-screen text-gray-900">
 
-{# ================= HEADER NAV ================= #}
+{# ================= HEADER ================= #}
 <nav class="bg-black px-6 py-4 shadow-lg border-b border-amber-600 z-50 relative">
     <div class="container mx-auto flex justify-between items-center">
         <a class="text-white text-2xl font-bold hover:text-amber-300 transition flex items-center gap-3" href="{{ path('dashboard') }}">
             <span class="text-3xl">🍽️</span>
-            <span class="font-cursive">La Table Gourmande</span>
+            <span>La Table Gourmande</span>
         </a>
 
         <div class="flex items-center gap-4">
@@ -30,171 +28,128 @@
                         {{ app.user.email|first|upper }}
                     </div>
                     <span class="text-amber-200 font-medium">{{ app.user.email }}</span>
-                    <a href="{{ path('app_logout') }}" class="bg-white text-red-800 hover:bg-amber-100 px-4 py-2 rounded-full font-medium transition shadow-md">
+                    <a href="{{ path('app_logout') }}" class="bg-white text-red-800 hover:bg-amber-100 px-4 py-2 rounded-full transition">
                         Déconnexion
                     </a>
                 </div>
             {% else %}
                 <div class="flex gap-3">
-                    <a href="{{ path('app_login') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-full font-medium transition shadow-md">
-                        Connexion
-                    </a>
-                    <a href="{{ path('app_register') }}" class="border-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white px-5 py-2 rounded-full font-medium transition">
-                        Inscription
-                    </a>
+                    <a href="{{ path('app_login') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-full">Connexion</a>
+                    <a href="{{ path('app_register') }}" class="border-2 border-amber-500 text-amber-500 px-5 py-2 rounded-full">Inscription</a>
                 </div>
             {% endif %}
         </div>
     </div>
 </nav>
+{# ================= {% if is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE') %} ================= #}
 
-{# ================= RÉCUPÉRER LE PANIER ================= #}
-{% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
+
+{# ================= PANIER CLIENT ================= #}
+{% if app.user and (is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')) %}
+
+
     {% set panier = app.user.getPaniers().first() %}
 {% else %}
     {% set panier = null %}
 {% endif %}
 
-{# ================= LAYOUT PRINCIPAL ================= #}
 <div class="flex min-h-screen">
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-black text-white p-6 shadow-xl border-r border-amber-600">
-        <div class="text-center mb-10">
-            <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600
-                        rounded-full mx-auto mb-4 flex items-center justify-center text-3xl">
-                👨‍🍳
-            </div>
-            <h3 class="text-xl font-bold text-amber-200">Menu Principal</h3>
-            <p class="text-amber-300 text-sm mt-1">Gest Restau Pro</p>
-        </div>
+{# ================= SIDEBAR ================= #}
+<aside class="w-64 bg-black text-white p-6 shadow-xl border-r border-amber-600">
 
-        <ul class="space-y-3">
+    <div class="text-center mb-10">
+        <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl">👨‍🍳</div>
+        <h3 class="text-xl font-bold text-amber-200">Menu Principal</h3>
+    </div>
+
+    <ul class="space-y-3">
+
+        {# ================= CLIENT ================= #}
+{% if app.user and (is_granted('ROLE_USER') or is_granted('ROLE_RECEPTIONNISTE')) %}
+
+
+
+        
+
             <li>
-                <a href="{{ path('dashboard') }}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 transition">
-                    <span class="text-xl">📊</span>
-                    <span>Tableau de Bord</span>
+                <a href="{{ path('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">
+                    📊 Tableau de Bord
                 </a>
             </li>
-
-            {% if is_granted('ROLE_ADMIN') %}
-                <li>
-                    <a href="{{ path('app_admin_plat') }}"
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 transition">
-                        <span class="text-xl">🍲</span>
-                        <span>Gestion des Plats</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('app_admin_plat_new') }}"
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 transition">
-                        <span class="text-xl">➕</span>
-                        <span>Ajouter un Plat</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('admin_dashboard') }}"
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 transition">
-                        <span class="text-xl">⚙️</span>
-                        <span>Espace Admin</span>
-                    </a>
-                </li>
-            {% endif %}
-
-            {% if app.user %}
-                <!-- AJOUTEZ CETTE PARTIE POUR LES CLIENTS -->
-                {% if is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
-                    <li>
-                        <a href="{{ path('client_panier') }}"
-                           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 transition text-amber-300">
-                            <span class="text-xl">🛒</span>
-                            <span>Mon Panier</span>
-                            <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                {% if panier and panier.panierItems is defined %}
-                                    {{ panier.panierItems|length }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </span>
-                        </a>
-                    </li>
-                    
-                    <!-- ⭐⭐⭐ NOUVEAU LIEN : MES COMMANDES ⭐⭐⭐ -->
-                    <li>
-                        <a href="{{ path('client_commandes') }}"
-                           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 transition text-amber-300">
-                            <span class="text-xl">📋</span>
-                            <span>Mes Commandes</span>
-                            <span class="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                                {% if app.user and app.user.commandes is defined %}
-                                    {{ app.user.commandes|length }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </span>
-                        </a>
-                    </li>
-                    <!-- ⭐⭐⭐ FIN DU NOUVEAU LIEN ⭐⭐⭐ -->
-                {% endif %}
-            {% endif %}
-
-            <li class="pt-6 mt-6 border-t border-amber-700">
-                <a href="{{ path('app_logout') }}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-700 transition text-amber-200">
-                    <span class="text-xl">🚪</span>
-                    <span>Déconnexion</span>
+            <li>
+                <a href="{{ path('client_panier') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-amber-300">
+                    🛒 Mon Panier
+                    <span class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full">
+                        {% if panier and panier.panierItems is defined %}
+                            {{ panier.panierItems|length }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </span>
                 </a>
             </li>
-        </ul>
+            <li>
+                <a href="{{ path('client_commandes') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-amber-300">
+                    📋 Mes Commandes
+                </a>
+            </li>
+            <!-- NOUVEAU BOUTON : Facture (version intelligente) -->
+            <li>
+                <a href="{{ path('client_derniere_facture') }}" 
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-green-300">
+                    📄 Facture
+                </a>
+            </li>
+        {% endif %}
 
-        <div class="mt-10 p-4 bg-amber-800/40 rounded-xl text-center text-sm">
-            🕒 Service: 12h–23h<br>
-            📞 05 22 33 44 55
-        </div>
-    </aside>
+        {# ================= CHEF ================= #}
+        {% if is_granted('ROLE_CHEF') %}
+            <li>
+                <a href="{{ path('chef_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-blue-300">
+                    🔥 État Préparation
+                </a>
+            </li>
+        {% endif %}
 
-    <!-- CONTENU PRINCIPAL -->
-    <main class="flex-1 p-6 bg-white rounded-l-3xl shadow-inner">
-        {% block body %}{% endblock %}
-    </main>
+        {# ================= LIVREUR ================= #}
+        {% if is_granted('ROLE_LIVREUR') %}
+            <li>
+                <a href="{{ path('livreur_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-green-300">
+                    🚚 État Livraison
+                </a>
+            </li>
+        {% endif %}
+
+        {# ================= ADMIN ================= #}
+        {% if is_granted('ROLE_ADMIN') %}
+            <li><a href="{{ path('app_admin_plat') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">🍲 Gestion des Plats</a></li>
+                <li><a href="{{ path('admin_employee_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">👥 Gestion des Employés </a></li>
+            <li><a href="{{ path('admin_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700">⚙️ Espace Admin</a></li>
+        {% endif %}
+
+        <li class="pt-6 mt-6 border-t border-amber-700">
+            <a href="{{ path('app_logout') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-700 text-amber-200">🚪 Déconnexion</a>
+        </li>
+
+    </ul>
+</aside>
+
+    {# Dans la section des rôles #}
+    {% if is_granted('ROLE_RESPONSABLE') %}
+        <li>
+            <a href="{{ path('responsable_index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-700 text-purple-300">
+                🛡️ Interface Responsable
+            </a>
+        </li>
+    {% endif %}
+
+{# ================= MAIN ================= #}
+<main class="flex-1 p-6 bg-white rounded-l-3xl shadow-inner">
+    {% block body %}{% endblock %}
+</main>
 
 </div>
-
-{# ================= SCRIPT JS PANIER ================= #}
-{% if app.user and is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') %}
-<script>
-function addToCart(platId) {
-    fetch('/client/panier/add/' + platId, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest'}
-    })
-    .then(res => res.json())
-    .then(data => {
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-fadeIn';
-        notification.innerHTML = `
-            <div class="flex items-center gap-3">
-                <span class="text-xl">✅</span>
-                <div>
-                    <p class="font-bold">Ajouté au panier !</p>
-                    <p class="text-sm">Le plat a été ajouté à votre panier</p>
-                </div>
-            </div>`;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-    })
-    .catch(err => { console.error(err); alert('Erreur panier'); });
-}
-
-// Animation notification
-const style = document.createElement('style');
-style.textContent = `
-@keyframes fadeIn { from {opacity:0;transform:translateY(-20px);} to {opacity:1;transform:translateY(0);} }
-.animate-fadeIn { animation: fadeIn 0.3s ease-out; }`;
-document.head.appendChild(style);
-</script>
-{% endif %}
 
 {% block javascripts %}{% endblock %}
 </body>

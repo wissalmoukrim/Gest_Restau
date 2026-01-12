@@ -32,12 +32,22 @@
                     {etat: 'terminee', icon: '✅', label: 'Terminée'}
                 ] %}
                 
+                {# Calculer l'index du statut actuel #}
+                {% set statuts = ['en_attente', 'en_preparation', 'en_livraison', 'terminee'] %}
+                {% set current_index = 0 %}
+                
+                {% for statut in statuts %}
+                    {% if statut == commande.statut %}
+                        {% set current_index = loop.index0 %}
+                    {% endif %}
+                {% endfor %}
+                
                 {% for etape in etapes %}
                 <div class="text-center">
                     <div class="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center
                         {% if etape.etat == commande.statut %}
                             bg-blue-600 text-white
-                        {% elseif loop.index0 < array_search(commande.statut, ['en_attente', 'en_preparation', 'en_livraison', 'terminee']) %}
+                        {% elseif loop.index0 < current_index %}
                             bg-green-600 text-white
                         {% else %}
                             bg-gray-300 text-gray-500
@@ -156,7 +166,7 @@
                             <span class="text-xl">🍛</span>
                             <div>
                                 <p class="font-bold">{{ item.plat.nom }}</p>
-                                <p class="text-sm text-gray-500">{{ item.plat.categorie }}</p>
+                                <p class="text-sm text-gray-500">{{ item.plat.description }}</p>
                             </div>
                         </div>
                         <div class="text-center self-center">{{ item.quantite }}</div>

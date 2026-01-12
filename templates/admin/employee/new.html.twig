@@ -1,40 +1,218 @@
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Ajouter un employé{% endblock %}
+{% block title %}➕ Nouvel Employé{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1>Ajouter un employé</h1>
-
-    {{ form_start(form) }}
-
-    {{ form_errors(form) }}
-
-    {# CSRF TOKEN — NE PAS SUPPRIMER #}
-    {{ form_row(form._token) }}
-
-    <div class="row">
-        <div class="col-md-6">{{ form_row(form.nom) }}</div>
-        <div class="col-md-6">{{ form_row(form.prenom) }}</div>
+<div class="container mx-auto p-6 max-w-4xl">
+    <!-- En-tête -->
+    <div class="mb-8">
+        <a href="{{ path('admin_employee_index') }}" 
+           class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium mb-4">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour à la liste
+        </a>
+        
+        <div class="flex items-center gap-4 mb-6">
+            <div class="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl">
+                <i class="fas fa-user-plus text-blue-600 text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Nouvel employé</h1>
+                <p class="text-gray-600">Ajoutez un nouveau membre à votre équipe</p>
+            </div>
+        </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-6">{{ form_row(form.email) }}</div>
-        <div class="col-md-6">{{ form_row(form.telephone) }}</div>
+    <!-- Carte du formulaire -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="p-8">
+            {{ form_start(form) }}
+            
+            <!-- Informations personnelles -->
+            <div class="mb-10">
+                <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200 flex items-center gap-3">
+                    <i class="fas fa-id-card text-blue-500"></i>
+                    Informations personnelles
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Nom -->
+                    <div>
+                        {{ form_label(form.nom, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.nom, {'attr': {
+                                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition',
+                                'placeholder': 'Dupont'
+                            }}) }}
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                        </div>
+                        {{ form_errors(form.nom) }}
+                    </div>
+                    
+                    <!-- Prénom -->
+                    <div>
+                        {{ form_label(form.prenom, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.prenom, {'attr': {
+                                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition',
+                                'placeholder': 'Jean'
+                            }}) }}
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                        </div>
+                        {{ form_errors(form.prenom) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="mb-10">
+                <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200 flex items-center gap-3">
+                    <i class="fas fa-address-book text-green-500"></i>
+                    Informations de contact
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Email -->
+                    <div>
+                        {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.email, {'attr': {
+                                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition',
+                                'placeholder': 'jean.dupont@example.com'
+                            }}) }}
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                        </div>
+                        {{ form_errors(form.email) }}
+                    </div>
+                    
+                    <!-- Téléphone -->
+                    <div>
+                        {{ form_label(form.telephone, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.telephone, {'attr': {
+                                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition',
+                                'placeholder': '06 12 34 56 78'
+                            }}) }}
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-gray-400"></i>
+                            </div>
+                        </div>
+                        {{ form_errors(form.telephone) }}
+                    </div>
+                </div>
+                
+                <!-- Adresse -->
+                <div class="mt-6">
+                    {{ form_label(form.adresse, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                    <div class="relative">
+                        {{ form_widget(form.adresse, {'attr': {
+                            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition',
+                            'placeholder': '123 Avenue des Champs-Élysées, 75008 Paris',
+                            'rows': 3
+                        }}) }}
+                        <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
+                            <i class="fas fa-map-marker-alt text-gray-400"></i>
+                        </div>
+                    </div>
+                    {{ form_errors(form.adresse) }}
+                </div>
+            </div>
+
+            <!-- Rôle et mot de passe -->
+            <div class="mb-10">
+                <h2 class="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200 flex items-center gap-3">
+                    <i class="fas fa-shield-alt text-purple-500"></i>
+                    Accès et autorisations
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Rôle -->
+                    <div>
+                        {{ form_label(form.roles, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.roles, {'attr': {
+                                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none'
+                            }}) }}
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        {{ form_errors(form.roles) }}
+                        <p class="text-sm text-gray-500 mt-2">Sélectionnez le rôle de l'employé</p>
+                    </div>
+                    
+                    <!-- Mot de passe -->
+                    <div>
+                        {{ form_label(form.password, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.password, {'attr': {
+                                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition',
+                                'placeholder': 'Mot de passe sécurisé'
+                            }}) }}
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                        </div>
+                        {{ form_errors(form.password) }}
+                        <p class="text-sm text-gray-500 mt-2">Minimum 8 caractères</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                <button type="reset" 
+                        class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium 
+                               hover:bg-gray-50 transition-colors flex items-center gap-2">
+                    <i class="fas fa-redo"></i>
+                    Réinitialiser
+                </button>
+                
+                <div class="flex gap-3">
+                    <a href="{{ path('admin_employee_index') }}"
+                       class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium 
+                              hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        Annuler
+                    </a>
+                    
+                    <button type="submit"
+                            class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white 
+                                   rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 
+                                   transition-all hover:shadow-lg flex items-center gap-2">
+                        <i class="fas fa-user-plus"></i>
+                        Créer l'employé
+                    </button>
+                </div>
+            </div>
+            
+            {{ form_end(form) }}
+        </div>
     </div>
-
-    {{ form_row(form.adresse) }}
-    {{ form_row(form.roles) }}
-    {{ form_row(form.password) }}
-
-    <button type="submit" class="btn btn-success mt-3">
-        Ajouter
-    </button>
-
-    {{ form_end(form) }}
-
-    <a href="{{ path('admin_employee_index') }}" class="btn btn-secondary mt-2">
-        Retour à la liste
-    </a>
 </div>
+
+<style>
+    /* Style pour les champs du formulaire */
+    select, input, textarea {
+        padding-left: 40px !important;
+    }
+    
+    /* Style pour les erreurs */
+    .form-error {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Animation pour les champs focus */
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+</style>
 {% endblock %}

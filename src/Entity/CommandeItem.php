@@ -9,18 +9,19 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CommandeItemRepository::class)]
 class CommandeItem
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+   #[ORM\Id]
+#[ORM\GeneratedValue]
+#[ORM\Column]
+private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'commandeItems')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Commande $commande = null;
 
     #[ORM\ManyToOne(inversedBy: 'commandeItems')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Plat $plat = null;
+
 
     #[ORM\Column]
     private ?int $quantite = null;

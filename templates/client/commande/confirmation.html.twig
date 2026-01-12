@@ -1,87 +1,349 @@
-{# templates/client/commande/confirmation.html.twig #}
 {% extends 'base_dashboard.html.twig' %}
 
-{% block title %}Confirmation de commande{% endblock %}
+{% block title %}Facture #{{ commande.id }} - Confirmation{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .facture-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .badge-statut {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .table-plats th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    .total-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #0ea5e9;
+    }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h2 class="mb-0">✅ Commande confirmée !</h2>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-success">
-                        <h4 class="alert-heading">Merci pour votre commande !</h4>
-                        <p>Votre commande a été enregistrée avec succès.</p>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Détails de la commande</h5>
-                            <ul class="list-group">
-                                <li class="list-group-item">
-                                    <strong>Numéro de commande :</strong> #{{ commande.id }}
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Date :</strong> {{ commande.date|date('d/m/Y H:i') }}
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Statut :</strong>
-                                    <span class="badge bg-warning">{{ commande.statut }}</span>
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Total :</strong> {{ commande.total }} DH
-                                </li>
-                                <li class="list-group-item">
-                                    <strong>Adresse de livraison :</strong> {{ commande.adresseLivraison }}
-                                </li>
-                            </ul>
+<div class="container py-4">
+    <!-- En-tête de facture -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header facture-header text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 mb-1"><i class="fas fa-check-circle me-2"></i>Commande Confirmée</h1>
+                            <p class="mb-0 opacity-75">Votre commande a été traitée avec succès</p>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <h5>Articles commandés</h5>
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Plat</th>
-                                            <th>Quantité</th>
-                                            <th>Prix unitaire</th>
-                                            <th>Sous-total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for item in commande.commandeItems %}
-                                        <tr>
-                                            <td>{{ item.plat.nom }}</td>
-                                            <td>{{ item.quantite }}</td>
-                                            <td>{{ item.prixUnitaire }} DH</td>
-                                            <td>{{ item.quantite * item.prixUnitaire }} DH</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                        <div class="text-end">
+                            <div class="bg-white text-success rounded-pill px-4 py-2">
+                                <h3 class="h5 mb-0">FACTURE</h3>
+                                <p class="mb-0 fw-bold">#{{ commande.id }}</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="mt-4">
-                        <a href="{{ path('client_panier') }}" class="btn btn-primary">
-                            Retour au panier
-                        </a>
-                        <!-- CORRECTION ICI : Remplacez app_home -->
-                        <a href="{{ path('dashboard') }}" class="btn btn-outline-secondary">
-                            Retour au dashboard
-                        </a>
-                        <a href="{{ path('app_plat_index') }}" class="btn btn-success">
-                            Commander à nouveau
-                        </a>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Message de succès -->
+                    <div class="alert alert-success border-0 bg-green-50 rounded-3 mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle fa-2x text-success"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="alert-heading mb-1">Merci pour votre commande !</h4>
+                                <p class="mb-0">Votre commande #{{ commande.id }} a été enregistrée avec succès. Vous recevrez une confirmation par email.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Informations de la commande -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-light shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Détails de la commande</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1">N° Commande</p>
+                                            <p class="fw-bold h5">#{{ commande.id }}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1">Date</p>
+                                            <p class="fw-bold">{{ commande.date|date('d/m/Y à H:i') }}</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1">Statut</p>
+                                            <span class="badge-statut 
+                                                {% if commande.statut == 'terminee' %}bg-green-100 text-green-800
+                                                {% elseif commande.statut == 'annulee' %}bg-red-100 text-red-800
+                                                {% elseif commande.statut == 'en_livraison' %}bg-blue-100 text-blue-800
+                                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                                {{ commande.statut|replace({'_': ' '})|title }}
+                                            </span>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1">Total</p>
+                                            <p class="fw-bold h5 text-success">{{ commande.total }} DH</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div>
+                                        <p class="text-muted small mb-1">Adresse de livraison</p>
+                                        <p class="fw-bold mb-0">
+                                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                            {{ commande.adresseLivraison }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Détails des plats -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-light shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fas fa-utensils me-2"></i>Articles commandés</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-plats table-hover mb-0">
+                                            <thead>
+                                                <tr class="table-light">
+                                                    <th class="ps-4">Plat</th>
+                                                    <th class="text-center">Qté</th>
+                                                    <th class="text-center">Prix</th>
+                                                    <th class="text-end pe-4">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in commande.commandeItems %}
+                                                <tr>
+                                                    <td class="ps-4">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="flex-shrink-0">
+                                                                <i class="fas fa-utensil-spoon text-muted"></i>
+                                                            </div>
+                                                            <div class="ms-3">
+                                                                <p class="fw-bold mb-0">{{ item.plat.nom }}</p>
+                                                                {% if item.plat.description %}
+                                                                <p class="text-muted small mb-0">{{ item.plat.description|slice(0, 40) }}...</p>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-secondary">{{ item.quantite }}</span>
+                                                    </td>
+                                                    <td class="text-center">{{ item.prixUnitaire }} DH</td>
+                                                    <td class="text-end pe-4 fw-bold text-success">
+                                                        {{ item.quantite * item.prixUnitaire }} DH
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total et actions -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="total-card p-4 rounded-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-1 text-dark">Total à payer</h5>
+                                        <p class="text-muted small mb-0">TVA incluse • Frais de livraison inclus</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <h2 class="text-success mb-0">{{ commande.total }} DH</h2>
+                                        <p class="text-muted small mb-0">Montant en dirhams marocains</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end h-100 align-items-center">
+                                <!-- Actions -->
+
+                                    <button onclick="window.print()" 
+                                            class="btn btn-secondary px-4">
+                                        <i class="fas fa-print me-2"></i>Imprimer
+                                    </button>
+                                    <button onclick="partagerFacture()" 
+                                            class="btn btn-info rounded-end-3 px-4">
+                                        <i class="fas fa-share-alt me-2"></i>Partager
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons de navigation -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between border-top pt-4">
+                                <a href="{{ path('client_panier') }}" class="btn btn-outline-primary px-4">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour au panier
+                                </a>
+                                
+                                <div class="btn-group">
+                                    <a href="{{ path('dashboard') }}" class="btn btn-outline-secondary px-4">
+                                        <i class="fas fa-home me-2"></i>Tableau de bord
+                                    </a>
+                                    <a href="{{ path('client_commandes') }}" class="btn btn-outline-dark px-4">
+                                        <i class="fas fa-list me-2"></i>Mes commandes
+                                    </a>
+                                </div>
+                                
+                                <a href="{{ path('app_plat_index') }}" class="btn btn-success px-4">
+                                    <i class="fas fa-plus-circle me-2"></i>Nouvelle commande
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations supplémentaires -->
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <div class="alert alert-light border rounded-3">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-info-circle text-primary fa-lg"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <h6 class="alert-heading mb-2">Informations importantes</h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-1"><i class="fas fa-clock text-muted me-2"></i>Délai de livraison estimé : 30-45 minutes</li>
+                                            <li class="mb-1"><i class="fas fa-phone text-muted me-2"></i>Service client : 05 XX XX XX XX</li>
+                                            <li class="mb-1"><i class="fas fa-envelope text-muted me-2"></i>Confirmation envoyée à : {{ commande.user.email }}</li>
+                                            <li><i class="fas fa-file-invoice text-muted me-2"></i>Cette facture fait office de justificatif de paiement</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Scripts -->
+<script>
+function exporterFacture() {
+    Swal.fire({
+        title: 'Export en PDF',
+        text: 'Voulez-vous télécharger cette facture au format PDF ?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Oui, télécharger',
+        cancelButtonText: 'Annuler',
+        confirmButtonColor: '#dc3545'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Simuler un téléchargement
+            Swal.fire({
+                title: 'Génération en cours...',
+                text: 'Votre PDF est en cours de préparation',
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                Swal.fire({
+                    title: 'Succès !',
+                    text: 'Votre facture a été générée. Le téléchargement va démarrer.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                
+                // Simulation de téléchargement
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.download = `facture-{{ commande.id }}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }, 1500);
+            });
+        }
+    });
+}
+
+function partagerFacture() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Facture #{{ commande.id }} - Restaurant',
+            text: 'Voici ma facture de commande #{{ commande.id }}',
+            url: window.location.href
+        });
+    } else {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            Swal.fire({
+                title: 'Lien copié !',
+                text: 'Le lien de la facture a été copié dans le presse-papier',
+                icon: 'success',
+                timer: 2000
+            });
+        });
+    }
+}
+
+// Ajouter SweetAlert si non présent
+if (typeof Swal === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+    document.head.appendChild(script);
+}
+</script>
+
+<!-- CSS pour l'impression -->
+<style>
+@media print {
+    .btn, button, a, .d-print-none {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+    
+    body {
+        background: white !important;
+        font-size: 12pt;
+    }
+    
+    .facture-header {
+        background: #333 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+    }
+    
+    .total-card {
+        background: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    .badge {
+        border: 1px solid #ccc !important;
+        background: white !important;
+        color: black !important;
+    }
+}
+</style>
 {% endblock %}

@@ -349,4 +349,37 @@ class ReceptionnisteController extends AbstractController
         
         return $this->redirectToRoute('receptionniste_commande_show', ['id' => $commande->getId()]);
     }
+    #[Route('/interface', name: 'receptionniste_interface')]
+public function interface(CommandeRepository $commandeRepo): Response
+{
+    // Commandes en attente
+    $commandesEnAttente = $commandeRepo->findBy(['statut' => 'en_attente'], ['date' => 'ASC']);
+
+    // Commandes en cours
+    $commandesEnCours = $commandeRepo->createQueryBuilder('c')
+        ->where('c.statut IN (:statuts)')
+        ->setParameter('statuts', ['en_preparation', 'en_livraison', 'pret_a_livrer'])
+        ->orderBy('c.date', 'ASC')
+        ->getQuery()
+        ->getResult();
+
+    // Commandes terminées aujourd'hui
+    $aujourdhui = new \DateTime();
+    $aujourdhui->setTime(0, 0, 0);
+    $commandesTerminees = $commandeRepo->createQueryBuilder('c')
+        ->where('c.statut = :statut')
+        ->andWhere('c.date >= :date')
+        ->setParameter('statut', 'terminee')
+        ->setParameter('date', $aujourdhui)
+        ->orderBy('c.date', 'DESC')
+        ->getQuery()
+        ->getResult();
+
+    return $this->render('receptionniste/interfacerece.html.twig', [
+        'commandesEnAttente' => $commandesEnAttente,
+        'commandesEnCours' => $commandesEnCours,
+        'commandesTerminees' => $commandesTerminees,
+    ]);
+}
+
 }
